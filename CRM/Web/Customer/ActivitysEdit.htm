@@ -1,0 +1,131 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+    <title></title>
+    <link href="../../CSS/style2.css" rel="stylesheet" />
+    <script type="text/javascript" src="../DatePicker/WdatePicker.js"></script>
+    <script src="../JS/jquery-1.4.1.min.js"></script>
+    <script>
+        function GetQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return decodeURI(r[2]);
+            return null;
+        }
+
+        $(function () {
+
+            GetDate()
+          
+         
+        })
+        ///显示数据
+        function GetDate() {
+            var id = GetQueryString('id');
+           
+            var cusid = GetQueryString('cusid')
+        
+            var json = { ID: id }
+            $.ajax({
+                type: "post",
+                url: "WebSever/Activitys.asmx/SelectWhereActivitys",
+                data: JSON.stringify(json),
+                contentType: "application/json",
+                success: function (data) {
+                    var a = data.d;
+                    $("#ActDateTxt").attr("Value", ConvertDate(a[0].ActDate))
+                       $("#ActAddTxt").attr("Value", a[0].ActAdd)
+                    $("#ActTitleTxt").attr("Value", a[0].ActTitle)
+                    $("#ActMemoTxt").attr("Value", a[0].ActMemo)
+                    $("#ActDescTxt").attr("innerHTML",a[0].ActDesc)
+                },
+                error: function (mes) {
+                    alert(mes.responseText);
+                }
+            })
+        }
+        //转换时间格式：
+        function ConvertDate(time) {
+            // 	/Date(1474074625560)/
+            var num = time.replace("/Date(", "").replace(")/", "");
+            var date = new Date(parseInt(num));
+            return date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+
+        }
+        $("#update").live("click", function () {
+            var ActID = GetQueryString('id');
+            var CusID = GetQueryString('cusid');
+            var ActDate = $("#ActDateTxt").val()
+            var ActAdd = $("#ActAddTxt").val()
+            var ActTitle = $("#ActTitleTxt").val()
+            var ActMemo = $("#ActMemoTxt").val()
+            var ActDesc = $("#ActDescTxt").val()
+           
+            var mode = { ActID: ActID,CusID:CusID, ActDate: ActDate, ActAdd: ActAdd, ActTitle: ActTitle, ActMemo: ActMemo, ActDesc, ActDesc }
+            var json = { Activity: mode }
+            $.ajax({
+                type: "post",
+                url: "WebSever/Activitys.asmx/update",
+                data: JSON.stringify(json),
+                contentType: "application/json",
+                success: function (data) {
+                    if (data.d >0) {
+                        alert("修改成功")
+                        location.reload();
+
+                    } else {
+                        alert("网络繁忙")
+                    }
+                },
+                error: function (mes) {
+                    alert(mes.responseText);
+                }
+            })
+
+        })
+     
+        //关闭i
+        $("#colse").live("click", function () {
+            window.location.href = 'ActivitysPage.htm' 
+
+        })
+    </script>
+    
+</head>
+<body>
+<table class="tableEdit">
+        <thead>
+            <tr>
+                <td colspan="4">编辑客户来往记录</td>
+            </tr>
+        </thead>
+        <tr>
+            <th>交往时间：</th>
+            <td>
+                <input type="date" onclick="WdatePicker()" id="ActDateTxt" /></td>
+            <th>交往地点：</th>
+            <td>
+                <input type="text" id="ActAddTxt"/>
+            </td>
+        </tr>
+        <tr>
+            <th>概要：</th>
+            <td><input type="text" id="ActTitleTxt" /></td>
+            <th>备注：</th>
+            <td><input type="text" id="ActMemoTxt" /></td>
+        </tr>
+        <tr>
+            <th>详细描述：</th>
+            <td colspan="3"><textarea id="ActDescTxt"></textarea></td>
+        </tr>
+        <tfoot>
+            <tr>
+                <td colspan="4">
+                    <input type="button" value="确定" id="update"/>&nbsp;&nbsp;
+                    <input type="button" value="关闭" id="colse" onclick="window.close()"  />
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</body>
+</html>

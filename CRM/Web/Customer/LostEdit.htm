@@ -1,0 +1,95 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link href="../CSS/style2.css" rel="stylesheet" type="text/css" />
+    <script src="../js/jquery-1.4.1.min.js"></script>
+    <script>
+        function GetQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return decodeURI(r[2]);
+            return null;
+        }
+
+        $(function () {
+           
+            BindOldmsg();
+        })
+
+        function BindOldmsg() {
+            var mid=GetQueryString('mid');
+            $.ajax({
+                type: "post",  //必须post不允许get请求
+                url: "WebSever/Measures.asmx/ShowOld",
+                data: JSON.stringify({mid:mid}), //参数
+                contentType: "application/json", //使用ajax调用Web服务必须加这句话
+                success: function (data) {
+                    var datas = data.d;
+                    for (var i = 0; i < datas.length; i++) {
+                        $('#oldmsg').val(datas[i].MeDesc)
+                    }
+                },
+                error: function (mes) {
+                    alert(mes.responseText);
+                }
+            })
+        }
+
+        $('#btnupdate').live('click', function () {
+
+            var mid = GetQueryString('mid');
+            var desc = $('#oldmsg').val();
+            if (desc == "") {
+                layer.msg('措施细节不能为空', { icon: 5, time: 2000, shade: 0.1 });
+                return;
+            }
+            $.ajax({
+                type: "post",  //必须post不允许get请求
+                url: "WebSever/Measures.asmx/Update",
+                data: JSON.stringify({ mid: mid,desc:desc }), //参数
+                contentType: "application/json", //使用ajax调用Web服务必须加这句话
+                success: function (data) {
+                    var datas = data.d;
+                    if (datas > 0) {
+                        alert('修改成功')
+                        window.location.href = 'LostsPage.htm';
+                    } else {
+                        alert('修改失败');
+                    }
+                },
+                error: function (mes) {
+                    alert(mes.responseText);
+                }
+            })
+        })
+    </script>
+</head>
+<body>
+    <table class="tableEdit">
+        <thead>
+            <tr>
+                <td colspan="2">
+                    编辑客户暂缓流失措施
+                </td>
+            </tr>
+        </thead>
+        <tr>
+            <th>
+                流失措施细节：
+            </th>
+            <td>
+                <textarea style="width: 90%" id="oldmsg"></textarea>
+            </td>
+        </tr>
+        <tfoot>
+            <tr>
+                <td colspan="4">
+                    <input type="button" value="确定" id="btnupdate" />&nbsp;&nbsp;
+                    <input type="button" value="取消" />
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</body>
+</html>

@@ -1,0 +1,111 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+    <title></title>
+    <link href="../CSS/style5.css" rel="stylesheet" type="text/css" />
+    <script src="../js/layui/layui.js"></script>
+    <link href="../js/layui/css/layui.css" rel="stylesheet" />
+    <script src="../js/jquery-1.4.1.min.js"></script>
+    <script>
+
+        $(function () {   // BindData();
+            Load()
+        })
+
+        //function BindData() {
+        //    layui.use(['table', 'layer', 'element', 'jquery', 'form'], function (table, layer, element, $, form) {//1
+        //        var table = layui.table;
+        //        var layer = layui.layer;
+        //        table.render({//2
+        //            elem: '#demo'
+        //        , url: '../WebService/CRMWebService.asmx/GetAllCus' //数据接口       
+        //        , cols: [[ //表头
+        //          , { field: 'CusID', title: '客户编号',  align: 'center' , }
+        //          , { field: 'CusName', title: '客户名称', align: 'center' }
+        //        ]]
+        //      , id: 'testReload'
+        //      , height: 300
+        //      , done: function (res, curr, count) {
+        //          var data = res.data;
+        //          $('.layui-table-body tr').each(function () {
+        //              var dataindex = $(this).attr('data-index');
+        //              var idx = 0;
+        //              for (var item in data) {
+        //                  if (dataindex == idx) {
+        //                      $(this).dblclick(function () {//双击某一行事件
+        //                         // layer.msg(JSON.stringify(data[item].CusID), { time: 10000 });
+        //                          $(window.parent.document).find('#CusID').val(JSON.parse(data[item].CusID))
+        //                          close();
+        //                      });
+        //                      break;
+        //                  }
+        //                  idx++;
+        //              }
+        //          });
+        //      }
+        //        });//2 end
+        //    });
+        //}
+
+      
+
+        function Load() {
+            $.ajax({
+                type: "post",
+                contentType: "application/json",
+                url: "../WebService/CRMWebService.asmx/GetAllCus",
+                data: null,
+                dataType: "json",
+
+                success: function (data) {
+                    $("#tab").empty();//清空
+                    $("#tabth").empty();//清空表头
+
+                    $.each(data.d, function (index, data) {
+
+                        //动态创建一个tr行标签,并且转换成jQuery对象
+                        var $trTemp = $("<tr></tr>");
+                        //往行里面追加 td单元格
+                        $trTemp.append("<td>" + data.CusID + "</td>");
+                        $trTemp.append("<td>" + data.CusName + "</td>");
+
+                        $trTemp.appendTo("#tab");
+                    });
+                }
+            });
+        }
+
+        $('tr').live('dblclick', function () {
+          
+            $(window.parent.document).find('#CusID').val($(this).find('td:first').text())
+           
+            close();
+        })
+
+        function close() {
+            var index = parent.layer.getFrameIndex(window.name);
+            parent.layer.close(index);
+        }
+    </script>
+
+</head>
+<body>
+    <table class="tableEdit">
+        <thead>
+            <tr>
+                <td colspan="2">
+                    客户选择<span style="color:Red;font-weight:normal">(选择双击确定)</span>
+                </td>
+            </tr>
+        </thead>
+        <tr>
+            <th>客户编号</th>
+            <th>客户名称</th>
+        </tr>
+        <tbody id="tab">
+         
+        </tbody>
+    </table>
+
+</body>
+</html>

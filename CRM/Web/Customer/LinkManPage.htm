@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link href="../CSS/Style1.css" rel="stylesheet" type="text/css" />
+    <script src="../JS/jquery-1.4.1.min.js"></script>
+    <script src="../js/Jquersession.js"></script>
+    <script>
+        function GetQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return decodeURI(r[2]);
+            return null;
+        }
+        $(function () {
+            GetData()
+
+        })
+        //显示数据
+        function GetData() {
+            var id = GetQueryString('id');
+            $.session.set('keycusid',id)
+            $("#Add").attr("name", id)
+            var jsonModel = { ID: id }
+            $.ajax({
+                type: "post",
+                url: "WebSever/LinkMans.asmx/SelectAllLinkMans",
+                data: JSON.stringify(jsonModel),
+                contentType: "application/json",
+                success: function (data) {
+                    var a = data.d;
+                    var td = "";
+                    
+                    td += "<tr><th>客户名称</th><th>联系人姓名</th><th>职位</th><th>手机号码</th><th>操作</th></tr>";
+                    for (var i = 0; i < a.length; i++) {
+                        
+                        td += "<tr>"
+                        td += "<td>"+a[i].CusName+"</td>"
+                        td += "<td>" + a[i].LMName + "</td>"
+                        td += "<td>" + a[i].LMDuty + "</td>"
+                        td += "<td>" + a[i].LMMobileNo + "</td>"
+                        td += "<td><a id='up' name='" + a[i].LMID + "'><img src='../images/33.gif' title='编辑' style='border: 0px' /></a> <img id='delete' name='" + a[i].LMID + "' title='删除' src='../images/11.gif' /></td>"
+                        td += "</tr>"
+                      
+                    }
+                    
+                    $("#dataTable").attr("innerHTML", td)
+                },
+                error: function (mes) {
+                    alert(mes.responseText);
+                }
+            })
+
+        }
+        //修改
+        $("#up").live("click", function () {
+        
+            window.location.href = 'LinkManEdit.htm?id=' + this.name;
+            
+        })
+        //添加
+        $("#Add").live("click", function () {
+            window.location.href = 'LinkManAdd.htm?id=' + this.name;
+
+        })
+        //删除
+        $("#delete").live("click", function () {
+            var LMID = this.name;
+            var jsonModel = { LMID: LMID }
+            $.ajax({
+                type: "post",
+                url: "WebSever/LinkMans.asmx/delete",
+                data: JSON.stringify(jsonModel),
+                contentType: "application/json",
+                success: function (data) {
+                    alert('删除成功')
+                    location.reload();
+                },
+                error: function (mes) {
+                    alert(mes.responseText);
+                }
+            })
+
+        })
+    </script>
+</head>
+<body>
+    <div id="desDiv">
+        <span>客户联系人管理</span><br />
+       
+    </div>
+    <div id="dataDiv">
+        <div id="headDiv">
+            <img src="../images/22.gif" />&nbsp;&nbsp;<a id="Add">新建</a>
+        </div>
+        <table class="dataTable" id="dataTable">
+        </table>
+        
+    </div>
+
+</body>
+</html>

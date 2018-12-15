@@ -1,0 +1,111 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+    <title></title>
+    <link href="../CSS/style2.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="../DatePicker/WdatePicker.js"></script>
+    <script src="../JS/jquery-1.4.1.min.js"></script>
+    <script>
+        $(function () {
+
+           
+
+        })
+        function GetQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return decodeURI(r[2]);
+            return null;
+        }
+          //添加功能
+        $("#AddBtn").live("click", function () {
+            var cusid = GetQueryString('id');
+            
+            var ActDate = $("#ActDateText").val();
+            var ActAdd = $("#ActAddText").val();
+            var ActTitle = $("#ActTitleText").val();
+            var ActMemo = $("#ActMemoText").val();
+            var ActDesc = $("#ActDescText").val();
+            var ActAd = { CusID: cusid, ActDate: ActDate, ActAdd: ActAdd, ActTitle: ActTitle, ActMemo: ActMemo, ActDesc: ActDesc, }
+            var jsonModel = { ActAdd: ActAd }
+           
+            if (ActDate == "") {
+                alert("交往时间不能为空");
+                return;
+                }
+            else if (ActAdd == "") {
+                alert("交往地点不能为空");
+                return;
+                }
+            else if (ActTitle == "") {
+                alert("概要不能为空");
+                return;
+                }
+            else if (ActMemo == "") {
+                alert("备注不能为空");
+                return;
+                }
+            else if (ActDesc == "") {
+                alert("详细描述不能为空");
+                return;
+                }
+                else {
+                    $.ajax({
+                        type: "post",
+                        url: "WebSever/Activitys.asmx/Add",
+                        data: JSON.stringify(jsonModel),
+                        contentType: "application/json",
+                        success: function (data) {
+                            if (data.d > 0) {
+                                alert("添加成功");
+                                window.location.href = 'ActivitysPage.htm';
+                            } else {
+                                alert("添加失败");
+                            }
+                        },
+                        error: function (mes) {
+                            alert(mes.responseText);
+                        }
+                    })
+                }
+            })
+    </script>
+
+</head>
+<body>
+<table class="tableEdit">
+        <thead>
+            <tr>
+                <td colspan="4">添加客户来往记录</td>
+            </tr>
+        </thead>
+        <tr>
+            <th>交往时间：</th>
+            <td>
+                <input type="date" onclick="WdatePicker()"  id="ActDateText"/></td>
+            <th>交往地点：</th>
+            <td>
+                <input type="text" id="ActAddText" />
+            </td>
+        </tr>
+        <tr>
+            <th>概要：</th>
+            <td><input type="text" id="ActTitleText" /></td>
+            <th>备注：</th>
+            <td><input type="text" id="ActMemoText"/></td>
+        </tr>
+        <tr>
+            <th>详细描述：</th>
+            <td colspan="3"><textarea id="ActDescText"></textarea></td>
+        </tr>
+        <tfoot>
+            <tr>
+                <td colspan="4">
+                    <input type="button" value="确定"  id="AddBtn" />&nbsp;&nbsp;
+                    <input type="button" value="关闭" onclick="window.close()" />
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</body>
+</html>

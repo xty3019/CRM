@@ -1,0 +1,256 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link href="../CSS/style3.css" rel="stylesheet" type="text/css" />
+    <link href="../js/layui/css/layui.css" rel="stylesheet" />
+    <script src="../js/layui/layui.js"></script>
+    <script src="../js/jquery-1.4.1.min.js"></script>
+    <script src="../js/Jquersession.js"></script>
+    <script type="text/javascript">
+        var rid;
+      //加载方法  
+        $(function () {
+            BindPlan();
+            GetRoleID()
+        })
+      
+        function GetRoleID() {
+            var uid = $.session.get("keyuid");
+            $.ajax({
+                type: "post",
+                url: "../WebService/SaleWebServer.asmx/GetRoleID",
+                data: { uid: uid },
+                ContentType: 'application/json',
+                success: function (data) {
+                    var datas = JSON.parse(data)
+                    rid = datas;
+                    if (rid == 1) {
+                        
+                        $("#PlanResult").attr("readonly", "readonly");
+                      
+
+                    }
+                },
+                error: function () {
+
+                }
+            })
+        }
+
+        //页面传参接收方法
+        function GetQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return decodeURI(r[2]);
+            return null;
+        }
+
+       
+        //时间格式转换方法
+        function ConvertDate(time) {
+            // 	/转换时间格式/
+            var num = time.replace("/Date(", "").replace(")/", "");
+            var date = new Date(parseInt(num));
+            return date.getFullYear() + "年" + (date.getMonth() + 1) + "月" + date.getDate() + "日";
+        }
+        //显示计划信息
+        function BindPlan() {
+            var cid = GetQueryString('chanid');//接受客户编号
+          
+            layui.use(['table', 'layer', 'element', 'jquery', 'form'], function (table, layer, element, $, form) {//1
+                var table = layui.table;
+                var layer = layui.layer;
+                table.render({//2
+                      elem: '#demo'
+                      , url: '../WebService/SaleWebServer.asmx/GetPlanByChanID' //数据接口
+                      , cols: [[ //表头
+                        {
+                            field: 'PlanDate', title: '计划时间', sort: true, width: 180, fixed: 'left', align: 'center', templet: function (row) {
+                                return ConvertDate(row.PlanDate);
+                            }
+                        }
+                      , { field: 'PlanContent', title: '计划内容', width: 180, align: 'center' }
+                      , {
+                          field: 'PlanResultDate', title: '执行时间', sort: true, width: 180, align: 'center', templet: function (row) {
+                              return ConvertDate(row.PlanResultDate);
+                          }
+                      }
+                      , { field: 'PlanResult', title: '执行结果', width: 180, align: 'center' }
+                  
+                     ]]
+                  , id: 'testReload'
+                  , page: {
+                        theme: '#FFB800',
+                      layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip'],
+
+                  }
+                  , height: 600
+                 , where: {
+                     ChanID:cid
+                 }
+             
+                });//2 end
+            })
+        }
+
+        //添加客户计划信息
+        layui.use(['form', 'layedit','table'], function () {
+              var form = layui.form
+                , layer = layui.layer
+                 , layedit = layui.layedit
+              $('#btnadd').live('click', function () {
+                  var cid = GetQueryString('chanid');//接受客户编号
+                var txtPlanContent = $('#PlanContent').val();
+                var txtPlanResult = $('#PlanResult').val();
+                if (rid == 1) {
+                    if (txtPlanContent == "") {
+                        layer.msg('计划内容不能为空啊!', { icon: 5, time: 2000, shade: 0.1 });
+                        return;
+                    }
+
+                } else {
+                    if (txtPlanContent == "") {
+                        layer.msg('计划内容不能为空啊!', { icon: 5, time: 2000, shade: 0.1 });
+                        return;
+                    }
+                    if (txtPlanResult == "") {
+                        layer.msg('执行结果不能为空啊!', { icon: 5, time: 2000, shade: 0.1 });
+                        return;
+                    }
+
+                }
+               
+            
+
+                $.post('../WebService/SaleWebServer.asmx/AddPlans', { ChanID: cid, PlanContent: txtPlanContent, PlanResult: txtPlanResult}, function (res) {
+                    layer.msg('保存成功', { icon: 1, time: 1000, shade: 0.1 }, function (index) {
+                        CloseWin();
+                       
+                    })
+                }, 'application/json')
+            })
+        });
+
+        //显示失败原因填写框
+        $('#btnno').live('click', function () {
+            if (rid == 1) {
+                layer.msg('你没有此操作权限！', { icon: 2, time: 2000, shade: 0.1 });
+                return;
+            } else {
+                $(".divno").show();
+            }
+        })
+
+        //隐藏失败原因填写框
+        $('#canle').live('click', function () {
+            $(".divno").hide();
+        })
+
+        //添加失败原因
+        layui.use(['form', 'layedit','table'], function () {
+            var form = layui.form
+              , layer = layui.layer
+               , layedit = layui.layedit
+            $('#btnaddError').live('click', function () {
+             
+                    var cid = GetQueryString('chanid')//得到客户编号
+                    var txtChanError = $('#txtno').val();
+                    if (txtChanError == "") {
+                        layer.msg('失败原因不能为空!', { icon: 5, time: 2000, shade: 0.1 });
+                        return;
+                    }
+                    $.post('../WebService/SaleWebServer.asmx/UpdateChancesError', { ChanID: cid, ChanError: txtChanError }, function (res) {
+                        layer.msg('保存成功', { icon: 1, time: 1000, shade: 0.1 })
+
+                        CloseWin();
+
+
+                    }, 'application/json')
+                
+
+            })
+        })
+
+        //开发成功
+        
+        $('#btnyes').live('click', function () {
+            if (rid == 1) {
+                layer.msg('你没有此操作权限！', { icon: 2, time: 2000, shade: 0.1 });
+                return;
+            } else {
+
+                var cid = GetQueryString('chanid')
+                $.post('../WebService/SaleWebServer.asmx/UpdateChancesOK', { ChanID: cid }, function (res) {
+                    layer.msg('保存成功', { icon: 1, time: 1000, shade: 0.1 }, function (index) {
+                        CloseWin();
+
+                    })
+                }, 'application/json')
+            }
+          
+        })
+
+        //关闭弹窗刷新
+        function CloseWin() {
+            parent.location.reload(); // 父页面刷新
+            var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+            parent.layer.close(index); //再执行关闭 
+        }
+    </script>
+</head>
+<body>
+    <table class="tableEdit">
+        <thead>
+            <tr>
+                <td>
+                    开发计划添加
+                </td>
+                <td style="text-align:right;">
+                    <a class="layui-btn layui-btn-sm" lay-event="detail" id="btnadd">保存</a>&nbsp;&nbsp;
+                    <a class="layui-btn layui-btn-sm" lay-event="planYes" id="btnyes">开发成功</a>&nbsp;&nbsp;
+                    <a class="layui-btn layui-btn-sm" lay-event="planYes" id="btnno">开发终止</a>
+                </td>
+            </tr>
+        </thead>
+        <tr>
+            <th>计划信息</th>
+            <th>执行信息</th>
+        </tr>
+        <tr>
+            <td>
+                <textarea id="PlanContent"></textarea>
+            </td>
+             <td>
+                <textarea id="PlanResult"></textarea>
+            </td>
+        </tr>
+    </table>
+   
+
+    <div class="divno"  style="display:none;">
+        <table class="tableEdit">
+            <thead>
+                <tr>
+                    <td>
+                        失败原因填写：
+                    </td>
+                </tr>
+            </thead>
+            <tr>
+                <td>
+                    <textarea id="txtno"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <input type="button" value="开发失败确定"  id="btnaddError" class="layui-btn layui-btn-sm"/>
+                    <input type="button" value="取消"  id="canle"  class="layui-btn layui-btn-sm"/>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table id="demo" lay-filter="test"></table>
+    <input type="button" value="关闭" onclick="window.close()" />
+</body>
+</html>

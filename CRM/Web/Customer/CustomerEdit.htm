@@ -1,0 +1,207 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+    <title></title>
+    <link href="../CSS/style2.css" rel="stylesheet" type="text/css" />
+    <script src="../JS/jquery-1.4.1.min.js"></script>
+    <script>
+        function GetQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return decodeURI(r[2]);
+            return null;
+        }
+
+        $(function () {
+            GetData()
+        })
+        //显示数据
+        function GetData() {
+            var id = GetQueryString('id');
+            var jsonModel = { ID: id }
+            $.ajax({         
+                type: "post",
+                url: "WebSever/CustomerPage.asmx/UpdateSelectWhere",
+                data: JSON.stringify(jsonModel),
+                contentType: "application/json",
+                success: function (data) {
+                    var a = data.d;
+                   
+                    $("#CusIDTxt").attr("Value", a[0].CusID)
+                    $("#UserNameTxt").attr("Value", a[0].UserLName)
+                    $("#UserNameTxt").attr("class", a[0].UserID)
+                 
+                    $("#CusNameTxt").attr("Value", a[0].CusName)                  
+                    $("#CusZipTxt").attr("Value", a[0].CusZip)
+                    $("#CusAddressTxt").attr("Value", a[0].CusAddress)
+                    $("#CusFaxTxt").attr("Value", a[0].CusFax)
+                    $("#CusWebsiteTxt").attr("Value", a[0].CusWebsite)
+                    $("#CusLicenceNoTxt").attr("Value", a[0].CusLicenceNo)
+                    $("#CusChieftainTxt").attr("Value", a[0].CusChieftain)
+                    $("#CusBankrollTxt").attr("Value", a[0].CusBankroll)
+                    $("#CusTurnoverTxt").attr("Value", a[0].CusTurnover)
+                    $("#CusBankTxt").attr("Value", a[0].CusBank)
+                    $("#CusBankNoTxt").attr("Value", a[0].CusBankNo)
+                    $("#CusLocalTaxNoTxt").attr("Value", a[0].CusLocalTaxNo)
+                    $("#CusNationalTaxNoTxt").attr("Value", a[0].CusNationalTaxNo)
+                    $("#CusDateTxt").attr("Value", ConvertDate(a[0].CusDate))
+                },
+                error: function (mes) {
+                    alert(mes.responseText);
+                }
+            })
+        }
+        //转换时间格式：
+        function ConvertDate(time) {
+            // 	/Date(1474074625560)/
+            var num = time.replace("/Date(", "").replace(")/", "");
+            var date = new Date(parseInt(num));
+            return date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+        }
+        //修改数据
+        $("#Update").live("click", function () {
+          
+            var CusID = $("#CusIDTxt").val()
+            var CusName = $("#CusNameTxt").val()
+            var UserID = $("#UserNameTxt").attr("class")
+         
+            var CusZip = $("#CusZipTxt").val()
+            var CusAddress = $("#CusAddressTxt").val()
+            var CusFax = $("#CusFaxTxt").val()
+            var CusWebsite = $("#CusWebsiteTxt").val()
+            var CusLicenceNo = $("#CusLicenceNoTxt").val()
+            var CusChieftain = $("#CusChieftainTxt").val()
+            var CusBankroll = $("#CusBankrollTxt").val()
+            var CusTurnover = $("#CusTurnoverTxt").val()
+            var CusBank = $("#CusBankTxt").val()
+            var CusBankNo = $("#CusBankNoTxt").val()
+            var CusLocalTaxNo = $("#CusLocalTaxNoTxt").val()
+            var CusNationalTaxNo = $("#CusNationalTaxNoTxt").val()
+            var CusDateTxt = $("#CusDateTxt").val()
+           
+            var mode = {CusID:CusID,UserID:UserID, CusName: CusName, CusZip: CusZip, CusAddress: CusAddress, CusFax: CusFax, CusWebsite: CusWebsite, CusLicenceNo: CusLicenceNo, CusChieftain: CusChieftain,
+                CusBankroll: CusBankroll, CusTurnover: CusTurnover, CusBank: CusBank, CusBankNo: CusBankNo, CusLocalTaxNo: CusLocalTaxNo, CusNationalTaxNo: CusNationalTaxNo, CusDate: CusDateTxt
+            }
+            var jsonModel = { customers: mode }
+            $.ajax({
+                type: "post",
+                url: "WebSever/CustomerPage.asmx/Update",
+                data: JSON.stringify(jsonModel),
+                contentType: "application/json",
+                success: function (data) {
+                    var a = data.d;
+                    if (a==true) {
+                        alert("修改成功");
+                        window.location.href = 'CustomerPage.htm';
+                    } else {
+                        alert("网络繁忙");
+                    }
+                },
+                error: function (mes) {
+                    alert(mes.responseText);
+                }
+            })
+        })
+        
+    </script>
+    <style type="text/css">
+        .auto-style1 {
+            height: 23px;
+        }
+    </style>
+</head>
+<body>
+<table class="tableEdit">
+        <thead>
+            <tr>
+                <td colspan="4">客户信息编辑</td>
+            </tr>
+        </thead>
+        <tr>
+            <th class="auto-style1">客户编号：</th>
+            <td class="auto-style1"><input type="text" class="1" id="CusIDTxt" value="1" disabled="disabled" /></td>
+            <th class="auto-style1">客户经理：</th>
+            <td class="auto-style1"><input type="text" id="UserNameTxt" value="1" class="" disabled="disabled" />
+            </td>
+        </tr>
+        <tr>
+            <th>客户名称：</th>
+            <td>
+                <input type="text" id="CusNameTxt" value="1"/>
+                
+             </td>
+            <th>邮政编码：</th>
+            <td><input type="text"id="CusZipTxt" />
+            </td>
+        </tr>
+        <tr>
+            <th>地址：</th>
+            <td colspan="3">
+                <input type="text" style="width:90%" id="CusAddressTxt"/>
+             </td>
+        </tr>
+        <tr>
+            <th>传真：</th>
+            <td>
+                <input type="text" id="CusFaxTxt" />
+             </td>
+            <th>Email：</th>
+            <td><input type="text" id="CusWebsiteTxt"/>
+            </td>
+        </tr>
+         <tr>
+            <th>营业执照注册号：</th>
+            <td>
+                <input type="text"id="CusLicenceNoTxt" />
+             </td>
+            <th>法人：</th>
+            <td><input type="text" id="CusChieftainTxt" />
+            </td>
+        </tr>
+        <tr>
+            <th>注册资金：</th>
+            <td>
+                <input type="text" id="CusBankrollTxt"/>
+             </td>
+            <th>年营业额：</th>
+            <td><input type="text"  id="CusTurnoverTxt"/>
+            </td>
+        </tr>
+        <tr>
+            <th>开户银行：</th>
+            <td>
+                <input type="text"  id="CusBankTxt"/>
+             </td>
+            <th>银行账号：</th>
+            <td><input type="text" id="CusBankNoTxt" />
+            </td>
+        </tr>
+        <tr>
+            <th>地税登记号：</th>
+            <td>
+                <input type="text" id="CusLocalTaxNoTxt" />
+             </td>
+            <th>国税登记号：</th>
+            <td><input type="text" id="CusNationalTaxNoTxt" />
+            </td>
+        </tr>
+        <tr>
+            <th>创建时间：</th>
+            <td >
+                <input type="text" id="CusDateTxt" value="1" disabled="disabled" />
+             </td>
+            <th></th>
+            <td>
+            </td>
+        </tr>
+        <tfoot>
+            <tr>
+                <td colspan="4">
+                    <input type="button" value="确定"  id="Update"/>&nbsp;&nbsp;
+                    <input type="button" value="关闭" onclick="window.close()" />
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</body>
+</html>

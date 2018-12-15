@@ -1,0 +1,209 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+	<meta charset="utf-8" />
+
+
+    <link href="../js/layui/css/layui.css" rel="stylesheet" />
+    <link href="../CSS/style2.css" rel="stylesheet" type="text/css" />
+    <script src="../js/layui/layui.js"></script>
+    <script src="../js/Toolkit.js"></script>
+    <script src="../js/jquery-1.4.1.min.js"></script>
+     <script>
+       
+         //方法
+         $(function () {
+             xianshi();
+             xianshi2();
+             xianshi3();
+
+         })
+       
+
+         //显示第一个表格数据
+         function xianshi() {
+             var id = GetQueryString('CSID');
+            
+             $.ajax({
+                 type: "post",
+                 url: "../WebService/CRMWebService.asmx/SelectMsgByCSID",
+                 data: JSON.stringify({ cusid:id }),
+                 dataType: "json",
+                 contentType: "application/json",
+                 success: function (data) {
+                     var datas = data.d;
+                     for (var i = 0; i < datas.length; i++) {
+                         $('#bianhao').text(datas[i].CusID);
+                         $('#type').text(datas[i].STName);
+                         $('#time').text(FormatJsonDate(datas[i].CSCreateDate));
+                         $('#man').text(datas[i].UserName);
+                         $('#gaiyao').text(datas[i].CSTitle);
+                         $('#xiangxi').text(datas[i].CSDesc);
+                     } 
+                 },
+                 error: function (cms) {
+                 }
+             })
+         }
+         //传值
+         function GetQueryString(name) {
+             var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+             var r = window.location.search.substr(1).match(reg);
+             if (r != null) return decodeURI(r[2]);
+             return null;
+         }
+
+         //显示第二个表格数据
+         function xianshi2() {
+             var id = GetQueryString('CSID');
+             $.ajax({
+                 type: "post",
+                 url: "../WebService/CRMWebService.asmx/SelectMsgByCSID",
+                 data: JSON.stringify({ cusid: id }),
+                 dataType: "json",
+                 contentType: "application/json",
+                 success: function (data) {
+                     var datas = data.d;
+                     for (var i = 0; i < datas.length; i++) {
+                         $('#datetime').text(FormatJsonDate(datas[i].CSDealDate));
+                         $('#dataman').text(datas[i].UserName);
+                         $('#dateset').text(datas[i].CSDeal);
+                       
+                     }
+                 },
+                 error: function (cms) {
+                 }
+             })
+         }
+
+         //显示第三个表格
+         function xianshi3() {
+             var id = GetQueryString('CSID');
+             $.ajax({
+                 type: "post",
+                 url: "../WebService/CRMWebService.asmx/SelectMsgByCSID",
+                 data: JSON.stringify({ cusid: id }),
+                 dataType: "json",
+                 contentType: "application/json",
+                 success: function (data) {
+                     var datas = data.d;
+                     for (var i = 0; i < datas.length; i++) {
+                         $('#CSResult').text(datas[i].CSResult);
+                         if (datas[i].CSSatisfy == 1) {
+                             datas[i].CSSatisfy = "很不满意";
+                         }
+                         if (datas[i].CSSatisfy == 2) {
+                             datas[i].CSSatisfy = "不满意";
+                         }
+                         if (datas[i].CSSatisfy == 3) {
+                             datas[i].CSSatisfy = "一般";
+                         }
+                         if (datas[i].CSSatisfy == 4) {
+                             datas[i].CSSatisfy = "满意";
+                         }
+                         if (datas[i].CSSatisfy == 5) {
+                             datas[i].CSSatisfy = "非常满意";
+                         }
+                       
+                         $('#CSSatisfy').text(datas[i].CSSatisfy);
+
+                     }
+                 },
+                 error: function (cms) {
+                 }
+             })
+         }
+     </script>
+</head>
+<body>
+    <table class="tableEdit" style="width:500px;" >
+        <thead>
+            <tr>
+                <td colspan="4">服务信息</td>
+            </tr>
+        </thead>
+        <tr>
+            <th>客户编号：</th>
+            <td id="bianhao">
+              
+            </td>
+            <th>服务类型：</th>
+            <td id="type">
+            
+            </td>
+        </tr>
+        <tr>
+            <th>创建时候：</th>
+            <td id="time">
+              
+            </td>
+            <th>创建人：</th>
+            <td id="man">
+
+            </td>
+        </tr>
+        <tr>
+            <th>服务概要：</th>
+            <td colspan="3" id="gaiyao">
+             
+            </td>
+        </tr>
+        <tr>
+            <th>详细信息：</th>
+            <td colspan="3" id="xiangxi">
+             
+            </td>
+        </tr>
+    </table>
+    <table class="tableEdit" style="width:500px;">
+        <thead>
+            <tr>
+                <td colspan="4">服务处理</td>
+            </tr>
+        </thead>
+        <tr>
+            <th>处理时间：</th>
+            <td id="datetime">
+               
+            </td>
+            <th>处理人：</th>
+            <td id="dataman">
+             
+            </td>
+        </tr>
+        <tr>
+            <th>服务处理：</th>
+            <td colspan="3" id="dateset">
+              
+            </td>
+        </tr>
+    </table>
+    <table class="tableEdit" style="width:500px;">
+        <thead>
+            <tr>
+                <td colspan="4">服务反馈</td>
+            </tr>
+        </thead>
+        <tr>
+            <th>处理结果：</th>
+            <td id="CSResult">
+              
+            </td>
+            <th>满意度：</th>
+            <td id="CSSatisfy">
+              
+            </td>
+        </tr>
+        <tfoot>
+            <tr>
+                <td colspan="4">
+                    <input type="button" value="关闭" onclick="window.close()" />
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+
+</body>
+</html>

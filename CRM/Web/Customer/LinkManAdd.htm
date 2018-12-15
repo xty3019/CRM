@@ -1,0 +1,121 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link href="../CSS/style2.css" rel="stylesheet" type="text/css" />
+    <script src="../JS/jquery-1.4.1.min.js"></script>
+    <script type="text/javascript">
+        function GetQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return decodeURI(r[2]);
+            return null;
+        }
+    $(function () {
+        })
+          //添加功能
+    $("#AddBtn").live("click", function () {
+              var lid = GetQueryString('id');
+            var LMName = $("#LMNameText").val();
+            var LMSex = $(':radio:checked').val();
+            var LMDuty = $("#LMDutyText").val();
+            var LMOfficeNo = $("#LMOfficeNoText").val();
+            var LMMobileNo = $("#LMMobileNoText").val();
+            var LMMemo = $("#LMMemoText").val();
+            var len = LMSex.length;
+            if (len > 0) {
+               $(":radio:checked").val();
+            }
+          
+
+            var mode = {CusID:lid, LMName: LMName, LMSex: LMSex, LMDuty: LMDuty, LMOfficeNo: LMOfficeNo, LMMobileNo: LMMobileNo, LMMemo: LMMemo, }
+            var jsonModel = { model: mode }
+                if (LMName == "") {
+                    alert("姓名不能为空");
+                }
+                else if (len == "") {
+                    alert("性别不能为空");
+                }
+                else if (LMDuty == "") {
+                    alert("职位不能为空");
+                }
+                else if (LMMobileNo == "") {
+                    alert("固定电话不能为空");
+                }
+                else if (LMOfficeNo == "") {
+                    alert("手机号码不能为空");
+                }
+                else if (LMMemo == "") {
+                    alert("备注不能为空");
+                }
+                else {
+                    $.ajax({
+                        type: "post",
+                        url: "WebSever/LinkMans.asmx/Add",
+                        data: JSON.stringify(jsonModel),
+                        contentType: "application/json",
+                        success: function (data) {
+                            
+                            if (data.d > 0) {
+                                alert("添加成功");
+                                window.location.href ='LinkManPage.htm';
+                            } else {
+                                alert("添加失败");
+                            }
+                        },
+                        error: function (mes) {
+                            alert(mes.responseText);
+                        }
+                    })
+                }
+        })
+        $("#colse").live("click", function () {
+            
+            window.location.href = 'LinkManPage.htm?id=' + GetQueryString('id');;
+        })
+    </script>
+</head>
+<body>
+    <table class="tableEdit">
+        <thead>
+            <tr>
+                <td colspan="4">添加联系人</td>
+            </tr>
+        </thead>
+        <tr>
+            <th>姓名：</th>
+            <td>
+                <input type="text" id="LMNameText" />
+            </td>
+            <th>性别：</th>
+            <td>
+                <input type="radio" name="sex" value="男" />男&nbsp;&nbsp;<input type="radio" name="sex" value="女" />女
+            </td>
+        </tr>
+        <tr>
+            <th>职位：</th>
+            <td><input type="text" id="LMDutyText" /></td>
+            <th>固定电话：</th>
+            <td><input type="text" id="LMOfficeNoText" /></td>
+        </tr>
+        <tr>
+            <th>手机号码：</th>
+            <td><input type="text" id="LMMobileNoText" /></td>
+            <th></th>
+            <td></td>
+        </tr>
+        <tr>
+            <th>备注：</th>
+            <td colspan="3"><textarea id="LMMemoText"></textarea></td>
+        </tr>
+        <tfoot>
+            <tr>
+                <td colspan="4">
+                    <input id="AddBtn" type="button" value="确定" />&nbsp;&nbsp;
+                    <input type="button" value="关闭" onclick="window.close()" id="colse"/>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</body>
+</html>

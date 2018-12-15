@@ -1,0 +1,249 @@
+﻿素<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link href="../CSS/Style1.css" rel="stylesheet" type="text/css" />
+    <link href="../CSS/style2.css" rel="stylesheet" type="text/css" />
+ 
+    <link href="../js/layui/css/layui.css" rel="stylesheet" />
+    <script src="../js/jquery-1.4.1.min.js"></script>
+    <script src="../js/layui/layui.js"></script>
+    <script src="../js/Jquersession.js"></script>
+    <script type="text/html" id="toolbarDemo">
+     
+            <button class="layui-btn layui-btn-sm" lay-event="btnsure">确定</button>
+            
+    </script>
+   
+        <script>
+            //加载事件
+            var rid;
+            $(function () {
+                BindData();
+                BindSelect();
+                GetRoleID();
+            })
+            function GetRoleID() {
+                var uid=$.session.get("keyuid");
+                $.ajax({
+                    type: "post",
+                    url: "../WebService/SaleWebServer.asmx/GetRoleID",
+                    data: {uid:uid},
+                    ContentType: 'application/json',
+                    success: function (data) {
+                        var datas = JSON.parse(data)
+                        rid = datas;
+                     
+                      
+                    },
+                    error: function () {
+
+                    }
+                })
+            }
+            //时间格式转换方法
+            function ConvertDate(time) {
+                // 	/转换时间格式/
+                var num = time.replace("/Date(", "").replace(")/", "");
+                var date = new Date(parseInt(num));
+                return date.getFullYear() + "年" + (date.getMonth() + 1) + "月" + date.getDate() + "日";
+            }
+
+            //显示数据
+            function BindData() {
+                var id = $.session.get('keyuid');
+            
+                layui.use(['table', 'layer', 'element', 'jquery', 'form'], function (table, layer, element, $, form){//1
+                    var table = layui.table;
+                    var layer = layui.layer;
+                    table.render({//2
+                        elem: '#demo'
+                        , url: '../WebService/SaleWebServer.asmx/GetAllChancesByNo' //数据接口
+                        ,done: function (res, curr, count) {
+                             count || this.elem.next('.layui-table-view').find('.layui-table-header').css('overflow', 'auto');
+                                layui.each($('select'), function (index, item) {
+                                    var elem = $(item);
+                                    elem.val(elem.data('value')).parents('div.layui-table-cell').css('overflow', 'visible');
+                                });
+                                form.render();
+                              }
+                         , cols: [[ //表头
+                          { field: 'ChanName', title: '客户名称', width: 180, fixed: 'left', align: 'center' }
+                          , { field: 'ChanTitle', title: '概要', width: 180, align: 'center' }
+                          , { field: 'ChanLinkMan', title: '联系人', width: 180, align: 'center' }
+                          , { field: 'ChanLinkTel', title: '联系电话', width: 180, sort: true, align: 'center' }
+                          , {
+                              field: 'ChanCreateDate', title: '创建时间', width: 266, sort: true, align: 'center',
+                              templet: function (row) {
+                                  return ConvertDate(row.ChanCreateDate);
+                              }
+                          }
+                          , {
+                              field: 'jtcyGxmc', title: '指派人', width: 180, align: 'center', templet: function (d) {
+                                  // 模板的实现方式也是多种多样，这里简单返回固定的
+                                  var html;
+                                  $.ajax({
+                                      type: "post",
+                                      url: "../WebService/SaleWebServer.asmx/SelectZhiPairen",
+                                      contentType: "application/json",
+                                      data: null,
+                                      async: false,
+                                      success: function (data) {
+                                          var $jsondata = data.d;
+                                    
+                                          html = '<div class="layui-inline" style="width:150px;height:10px"><select id="selecttype" size="3" >';
+                                          $("#selecttype").prepend("<option value='0'>请选择</option>");
+                                          for (var i = 0; i < $jsondata.length; i++) {
+                                             
+                                              html += "<option value='" + $jsondata[i].UserID + "'>" + $jsondata[i].UserName + "</option>";
+                        
+                                          }
+                                          html += '</select></div>';
+
+                                      }
+
+                                  })
+                                  return html;
+                              }
+                          }
+                         , { fixed: 'right', title: '操作', toolbar: '#toolbarDemo', width: 288, align: 'center' }
+                      
+                        ]]
+                      , id: 'testReload'
+                      , page: {
+                          theme: '#FFB800',
+                          layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip'],
+
+                      }
+                      , height: 600
+                      , where: {
+                            id: id
+                        }
+                    });//2 end
+
+                    table.on('tool(test)', function (obj) {
+                        var data = obj.data;
+                        if (obj.event === 'btnsure') {
+                          
+                            var uid = $('#selecttype').get(0).value;
+                         
+                            if (rid == 2) {
+                                layer.msg('你没有此操作权限！', { icon: 2, time: 2000, shade: 0.1 });
+                                return;
+                            } else {
+                                $.ajax({
+                                    type: "post",
+                                    url: "../WebService/SaleWebServer.asmx/AddChanDueMan",
+                                    data: { ChanID: data.ChanID, ChanDueMan: uid },
+                                    ContentType: 'application/json',
+                                    success: function (data) {
+                                        var datas = JSON.parse(data)
+                                        if (datas > 0) {
+                                            layer.msg('分配成功', { icon: 1, time: 2000, shade: 0.1 });
+                                            console.log(table);
+                                            table.reload('testReload')
+
+                                        } else {
+                                            layer.close(index);
+                                            layer.msg('分配失败', { icon: 2, title: '提示' });
+                                            return;
+                                        }
+                                    },
+                                    error: function () {
+
+                                    }
+                                })
+                            }
+                        }
+                      
+                      
+                    });
+                });
+            }
+
+
+            function BindSelect() {
+                $.ajax({
+                    type: "post",
+                    url: "../WebService/SaleWebServer.asmx/SelectAllUserTwo",
+                    data:null,
+                    ContentType: 'application/json',
+                    success: function (data) {
+                      var datas=JSON.parse(data)
+                        var html;
+                        for (var i = 0; i < datas.length; i++) {
+                            html += "<option value='"+datas[i].UserID+"'>"+datas[i].UserName+"</option>";
+                        }
+                        $('#selectuser').append(html);
+                    },
+                    error: function () {
+
+                    }
+                })
+            }
+
+            //查询sh
+            $('#btnselect').live('click', function () {
+                var txtname = $('#txtname').val();
+                var lxr = $('#txtlxr').val();
+                var cjr = $('#selectuser').get(0).value;
+                layui.use('table', function () {
+                    var table = layui.table;
+                    table.reload('testReload', {
+                        url: "../WebService/SaleWebServer.asmx/SelectMsgs",
+                        page: 1,
+                        where: {
+                            name: txtname,
+                            lxr: lxr,
+                            cjr:cjr
+                          
+                        }
+                    })
+                })
+            })
+        </script>
+    </head>
+<body>
+    <div id="desDiv">
+        <span>销售机会分配</span><br />
+        销售主管查看销售机会，并将销售机会指派给合适的销售人员
+    </div>
+    <form class="layui-form" action="">
+        <div id="dataDiv">
+            <table class="tableEdit" style="width: 98%">
+                <tr>
+                    <th>
+                        客户名称：
+                    </th>
+                    <td>
+                        <input type="text" name="txtname" required=required lay-verify="required" placeholder="客户名称" id="txtname" />
+                    </td>
+                    <th>
+                        联系人：
+                    </th>
+                    <td>
+                        <input type="text" name="txtlxr" required=required lay-verify="required" placeholder="联系人" id="txtlxr" />
+                    </td>
+                    <th>
+                        创建人：
+                    </th>
+                    <td>
+                        <select name="modules" lay-verify="required" lay-search="" id="selectuser">
+                            <option value="0">直接选择或搜索选择</option>
+
+                        </select>
+                    </td>
+
+                    <td colspan="8">
+                        <input type="button" value="查询" id="btnselect" class="layui-btn layui-btn-sm" />
+                    </td>
+                </tr>
+            </table>
+            <br />
+        </div>
+        </form>
+        <div>
+            <table id="demo" lay-filter="test"></table>
+        </div>
+   </body>
+</html>

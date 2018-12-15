@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <script src="../js/jquery-1.4.1.min.js"></script>
+    <link href="../CSS/style2.css" rel="stylesheet" type="text/css" />
+    
+    <script src="../js/json2.js"></script>
+	<meta charset="utf-8" />
+    <script type="text/javascript">
+        function showCustomer() {
+            var returnValue = window.showModalDialog("../publicPage/SelectCustomer.htm?data=" + Math.random(), "参数", "dialogWidth:400px;dialogHeight:220px;help:no");
+        }
+
+        //接收页面传的参数
+        function GetQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return decodeURI(r[2]);
+            return null;
+        }
+
+        //修改服务
+        $("#Update").live("click", function () {
+            var id = GetQueryString('cusid');  
+            var STName = $("#STName").val();
+            var mode = { STID: id, STName: STName }
+            var jsonModel = { tomers: mode }
+            $.ajax({
+                type: "post",
+                url: "../WebService/TypeWebService.asmx/Update",
+                data: JSON.stringify(jsonModel),
+                contentType: "application/json",
+                success: function (data) {
+                    var a = data.d;
+                    if (a == true) {
+                        alert("修改成功")
+                    } else {
+                        alert("网络繁忙");
+                    }
+                },
+                error: function (mes) {
+                    alert(mes.responseText);
+                }
+            })
+        
+
+        })
+    </script>
+
+    <style type="text/css">
+        #Select1 {
+            width: 181px;
+        }
+    </style>
+
+</head>
+<body>
+    <table class="tableEdit" style="width:600px;">
+        <thead>
+            <tr>
+                <td colspan="2">编辑服务</td>
+            </tr>
+        </thead>
+        <tr>
+            <th>服务名：</th>
+            <td>
+                <input type="text" id="STName" />
+            </td>
+        </tr>
+        <tfoot>
+            <tr>
+                <td colspan="2">
+                    <input type="button" value="确定" id="Update" />&nbsp;&nbsp;
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+
+</body>
+</html>

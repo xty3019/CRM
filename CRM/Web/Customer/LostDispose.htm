@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link href="../CSS/Style1.css" rel="stylesheet" type="text/css" />
+
+    <script src="../js/jquery-1.4.1.min.js"></script>
+
+    <script src="../js/Toolkit.js"></script>
+    <script>
+    
+        function GetQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return decodeURI(r[2]);
+            return null;
+        }
+      
+
+        $(function () {
+            GetData()
+        })
+        function GetData() {
+            var id = GetQueryString('id');
+            var jsonModel = { ID: id }
+            $("#Add").attr("name", id)
+            $.ajax({
+                type: "post",  //必须post不允许get请求
+                url: "WebSever/Measures.asmx/SelectAllMeasures",
+                data: JSON.stringify(jsonModel), //参数
+                contentType: "application/json", //使用ajax调用Web服务必须加这句话
+                success: function (data) {
+                    var jsondata = data.d;
+                    var td = ""
+                    td += "<tr><th>客户编号</th><th>客户名称</th><th>创建时间</th> <th>措施细节</th><th>操作</th> </tr>"
+                    for (var i = 0; i < jsondata.length; i++) {
+                        td += "<tr><td id='" + jsondata[i].MeID + "'>" + jsondata[i].CusID + "</td><td>" + jsondata[i].CusName + "</td><td>" + FormatJsonDate(jsondata[i].MeDate) + "</td><td>" + jsondata[i].MeDesc + "</td><td><a id='btnupdate' name='" + jsondata[i].MeID + "'><img title='编辑' src='../images/33.gif' style='border:0px'/></a><a id='Del' name='" + jsondata[i].MeID + "'><img title='删除' src='../images/11.gif' /></a></td></tr>"
+                    }
+                    $("#XianShiTable").attr("innerHTML", td)
+
+                },
+
+                error: function (mes) { }
+
+            });
+
+
+        }
+    
+        $('#btnupdate').live('click', function () {
+            window.location.href = 'LostEdit.htm?mid='+this.name;
+
+        })
+        //删除功能
+
+        $("#Del").live("click", function () {
+            var id = this.name;
+            var jsonModel = { MeID: id }
+
+            if (confirm("确认删除？")) {
+                $.ajax({
+                    type: "post",  //必须post不允许get请求
+                    url: "WebSever/Lost.asmx/LostDeleteID",
+                    data: JSON.stringify(jsonModel), //参数
+                    contentType: "application/json", //使用ajax调用Web服务必须加这句话
+                    success: function (data) {
+                        if (data.d == true) {
+                            alert("删除成功");
+                            GetData();
+                        } else {
+                            alert("删除失败");
+                        }
+                    },
+                    error: function (mes) {
+                        alert(mes.responseText);
+                    }
+                })
+            }
+        })  
+
+        $('#Add').live('click', function () {
+            var lid = GetQueryString('id');
+            window.location.href = 'LostAdd.htm?lid='+lid;
+        })
+
+    </script>
+</head>
+<body>
+    <div id="desDiv">
+        <span>客户流失措施管理</span><br />
+    </div>
+    <div id="dataDiv">
+        <div id="headDiv">
+            <img src="../images/22.gif" />&nbsp;&nbsp;<a id="Add">新建</a>
+        </div>
+        <table class="dataTable" id="XianShiTable">
+         
+        </table>
+    </div>
+</body>
+</html>

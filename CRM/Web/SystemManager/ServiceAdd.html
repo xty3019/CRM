@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+	<meta charset="utf-8" />
+    <script src="../js/jquery-1.4.1.min.js"></script>
+    <link href="../CSS/style2.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+        #Select1 {
+            width: 181px;
+        }
+    </style>
+    <script type="text/javascript">
+
+        function showCustomer() {
+            var returnValue = window.showModalDialog("../publicPage/SelectCustomer.htm?data=" + Math.random(), "参数", "dialogWidth:400px;dialogHeight:220px;help:no");
+        }
+
+        
+        //添加
+        $("#yes").live("click", function () {
+            var STName = $("#STName").val();
+          
+            var dataid = { STName: STName };
+            
+            var model = { services: dataid };
+            if (STName == "") {
+                alert("添加服务不能为空");
+            }
+            else {
+                $.ajax({
+                    type: "post",
+                    url: "../WebService/CRMWebService.asmx/Addservices",
+                    data: JSON.stringify(model),
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.d > 0) {
+                            alert("添加成功");
+                            $("#STName").attr("value", "");
+                        } else {
+                            alert("网络繁忙");
+                        }
+                    },
+                    error: function (cms) {
+                    }
+                })
+            }
+        })
+
+    </script>
+   
+
+
+</head>
+<body>
+    <table class="tableEdit" style="width:600px;">
+        <thead>
+            <tr>
+                <td colspan="2">新增服务</td>
+            </tr>
+        </thead>
+        <tr>
+            <th>服务名：</th>
+            <td>
+                <input type="text" id="STName" />
+            </td>
+        </tr>
+        <tfoot>
+            <tr>
+                <td colspan="2">
+                    <input type="button" value="确定" id="yes" />&nbsp;&nbsp;
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+
+</body>
+</html>

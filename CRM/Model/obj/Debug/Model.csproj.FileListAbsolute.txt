@@ -1,0 +1,9 @@
+F:\Net1822部项目\CRM\Model\bin\Debug\Maticsoft.Model.dll
+F:\Net1822部项目\CRM\Model\bin\Debug\Maticsoft.Model.pdb
+F:\Net1822部项目\CRM\Model\obj\Debug\Maticsoft.Model.dll
+F:\Net1822部项目\CRM\Model\obj\Debug\Maticsoft.Model.pdb
+F:\Net1822部项目\CRM3.0\CRM\Model\bin\Debug\Maticsoft.Model.dll
+F:\Net1822部项目\CRM3.0\CRM\Model\bin\Debug\Maticsoft.Model.pdb
+F:\Net1822部项目\CRM3.0\CRM\Model\obj\Debug\Maticsoft.Model.dll
+F:\Net1822部项目\CRM3.0\CRM\Model\obj\Debug\Maticsoft.Model.pdb
+F:\Net1822部项目\CRM3.0\CRM\Model\obj\Debug\Model.csprojResolveAssemblyReference.cache

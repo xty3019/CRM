@@ -1,0 +1,147 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <link href="../CSS/Style1.css" rel="stylesheet" type="text/css" />
+    <link href="../js/layui/css/layui.css" rel="stylesheet" />
+    <script src="../js/layui/layui.js"></script>
+    <script src="../js/Toolkit.js"></script>
+    <script src="../js/jquery-1.4.1.min.js"></script>
+	<meta charset="utf-8" />
+ 
+    <script type="text/javascript">
+        //function showDispose() {
+        //    var returnValue = window.showModalDialog("ServiceResultDialog.htm?data="+Math.random(), "参数", "dialogWidth:550px;dialogHeight:400px;help:no");
+        //}
+
+    
+        var sum;//定义一个变量接受总数
+        var index;//定义一个分页索引(页码)
+        var pagesize;//定义一个 每页显示多少条
+
+        $(function () {
+            GetCount();
+            Page();
+        })
+
+        function xianshi(pagesize, index) {
+            
+            $.ajax({
+                type: "post",
+                url: "../WebService/CRMWebService.asmx/SelectAllFore",
+                data: JSON.stringify({size:pagesize,pageindex:index}),
+              
+                contentType: "application/json",
+                success: function (data) {
+                    var datas = data.d;
+                    var html = "";
+                    for (var i = 0; i < datas.length; i++) {
+                        html += "<tr><td>" + datas[i].CusName + "</td><td>" + datas[i].CSTitle + "</td><td>" + datas[i].STName + "</td><td>" + FormatJsonDate(datas[i].CSCreateDate) + "</td><td>" + datas[i].UserName + "</td><td>" + FormatJsonDate(datas[i].CSDueDate) + "</td><td><input type='image' src='../images/bt_feedback.gif'  id='btnone' name='"+datas[i].CSID+"' /></td></tr>"
+                    }
+                    $(".dataTable").append(html)
+                },
+                error: function (cms) {
+                }
+            })
+
+        }
+
+        function GetCount() {
+
+
+            $.ajax({
+                type: "post",
+                contentType: "application/json",
+                url: "../WebService/CRMWebService.asmx/GetCountThree",
+                data: null,
+                async: false,
+                success: function (data) {
+                    sum = data.d;
+
+                }
+            });
+        }
+        function Page() {
+            layui.use('laypage', function () {
+                var laypage = layui.laypage;
+                laypage.render({
+                    elem: 'test1' //注意，这里的 test1 是 ID，不用加 # 号
+                  , count: sum //数据总数，从服务端得到
+                  , limit: 2//每页的条数
+                  , limits: [10, 20, 30]//可选择每页数目
+                  , layout: ['count', 'prev', 'page', 'next', 'limit', 'skip']
+                    , jump: function (obj, first) {
+                        //obj包含了当前分页的所有参数，比如：
+                        //console.log(obj.curr); //得到当前页，以便向服务端请求对应页的数据。
+                        //console.log(obj.limit); //得到每页显示的条数
+                        index = obj.curr;
+                        pagesize = obj.limit;
+                        xianshi(pagesize, index);
+                        //首次不执行
+                        if (!first) {
+                            //do something
+                        }
+                    }
+                })
+
+            })
+        }
+
+        layui.use('layer', function () {
+            var layer = layui.layer;
+            $("#btnone").live("click", function () {
+                var id = this.name;
+                layer.open({
+                    type: 2,
+                    title: "",
+                    area: ['50%', '85%'],
+                    content: ['ServiceResultDialog.html?CSID=' + id, 'on'],
+                    shade: 0.5,
+                    resize: false,
+                    anim: 2,
+                    move: false,
+                    scrollbr: false,
+                    end: function () {
+                        location.reload();
+                    }
+
+                });
+
+
+            })
+
+
+        });
+    </script>
+
+</head>
+<body>
+    <div id="desDiv">
+        <span>服务反馈</span><br />
+        对于客户提出的咨询、建议、投诉等服务进行处理完毕后，记录客户对服务的结果的满意度等
+    </div>
+    <div id="dataDiv">
+        <div id="headDiv">
+        </div>
+        <table class="dataTable">
+            <tr>
+                <th>客户名称</th>
+                <th>概要</th>
+                <th>服务类型</th>
+                <th>创建时间</th>
+                <th>分配人</th>
+                <th>分配时间</th>
+                <th>处理</th>
+            </tr>
+
+          
+        </table>
+
+        <center>
+            <div id="test1"></div>
+        </center>
+    </div>
+
+</body>
+</html>

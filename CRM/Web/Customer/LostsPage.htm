@@ -1,0 +1,225 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link href="../CSS/Style4.css" rel="stylesheet" type="text/css" />
+    <link href="../CSS/style2.css" rel="stylesheet" type="text/css" />
+    <link href="../js/layui/css/layui.css" rel="stylesheet" />
+    
+    <style type="text/css">
+        .style1
+        {
+            color: #FF0066;
+        }
+        .lost_class
+        {
+            width: 100%;
+            border: solid 1px;
+            border-collapse: collapse;
+        }
+        </style>
+    <script src="../js/layui/layui.js"></script>
+    <script src="../JS/jquery-1.4.1.min.js"></script>
+    <script>
+        var c;
+        var index;//定义一个分页索引(页码)
+        var pagesize;//定义一个 每页显示多少条
+        $(function () {
+            GetCount();
+            Page()
+           
+        })
+        //加载数据
+        function GetData(pagesize, index) {
+            var txtname = $('#txtname').val();
+            var selecttype = $('#selecttype').get(0).value;
+            var txtdate = $('#txtdate').val();
+            var json = { CusName: txtname, CLState: selecttype, CLEnterDate: txtdate };
+           
+            $.ajax({
+                type: "post",
+                url: "WebSever/Lost.asmx/SelectAllCustomLosts",
+                data: JSON.stringify({ models: json, pagesize: pagesize, pageindex: index }),
+                contentType: "application/json",
+                success: function (data) {
+                    var a = data.d;
+                    var td = "";
+
+                    td += "<th>客户编号</th><th>客户名称</th><th>上次下单时间</th><th>报警时间</th><th>流失时间</th><th>状态</th><th>操作</th></tr>";
+                    for (var i = 0; i < a.length; i++) {
+                        if (a[i].CLState == 1) {
+                            a[i].CLState = '流失报警';
+                        } else if (a[i].CLState == 2) {
+                            a[i].CLState = '暂缓流失';
+                        } else if (a[i].CLState == 3) {
+                            a[i].CLState = '确认流失';
+                    }
+                        td += "<tr>"
+                        td += "<td>" + a[i].CusID + "</td>"
+                        td += "<td>" + a[i].CusName + "</td>"
+                        td += "<td>" + ConvertDate(a[i].CLOrderDate) + "</td>"
+                        td += "<td>" + ConvertDate(a[i].CLDate) + "</td>"
+                        td += "<td>" + ConvertDate(a[i].CLEnterDate) + "</td>"
+                        td += "<td>" + a[i].CLState+ "</td>"
+                        if (a[i].CLState == '暂缓流失' || a[i].CLState == '流失报警')
+                        {
+                            td += "<td><img src='../images/bt_plan.gif' title='暂缓流失' style='border: 0px' id='zhls'name='" + a[i].CLID + "' />  <img src='../images/bt_confirm.gif' title='确认流失' id='btnsure' name='" + a[i].CLID + "' style='border: 0px' /> </td>"
+                        }else
+                        {
+                            td += "<td></td>"
+                        }
+                        td += "</tr>"
+
+                    }
+
+                    $("#dataTable").attr("innerHTML", td)
+                },
+                error: function (mes) {
+                    alert(mes.responseText);
+                }
+            })
+        }
+
+        function Page() {
+            layui.use('laypage', function () {
+                var laypage = layui.laypage;
+                laypage.render({
+                    elem: 'test1' //注意，这里的 test1 是 ID，不用加 # 号
+                  , count: c //数据总数，从服务端得到
+                  , limit: 1//每页的条数
+                  , limits: [2, 3, 4]//可选择每页数目
+                  , layout: ['count', 'prev', 'page', 'next', 'limit', 'skip']
+                    , jump: function (obj, first) {
+                        //obj包含了当前分页的所有参数，比如：
+                        //console.log(obj.curr); //得到当前页，以便向服务端请求对应页的数据。
+                        //console.log(obj.limit); //得到每页显示的条数
+                        index = obj.curr;
+                        pagesize = obj.limit;
+                        GetData(pagesize, index);
+                        //首次不执行
+                        if (!first) {
+                            //do something
+                        }
+                    }
+                })
+
+            })
+        }
+
+        function GetCount() {
+            var txtname = $('#txtname').val();
+            var selecttype = $('#selecttype').get(0).value;
+            var txtdate = $('#txtdate').val();
+            var json = { CusName: txtname, CLState: selecttype, CLEnterDate: txtdate };
+            var model = {models:json}
+            $.ajax({
+                type: "post",
+                contentType: "application/json",
+                url: "WebSever/Lost.asmx/GetCount",
+                data: JSON.stringify(model),
+                async: false,
+                success: function (data) {
+                    c = data.d;
+
+                }
+            });
+        }
+        //转换时间格式：
+       function ConvertDate(time) {
+            // 	/Date(1474074625560)/
+            var num = time.replace("/Date(", "").replace(")/", "");
+            var date = new Date(parseInt(num));
+            return date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+        }
+        //暂缓流失
+       $("#zhls").live("click", function () {
+         
+            window.location.href = 'LostDispose.htm?id='+this.name;
+
+        })
+        //确认流失
+       //修改
+       layui.use(['form', 'layedit'], function () {
+           var form = layui.form
+            , layer = layui.layer
+                , layedit = layui.layedit
+
+           $('#btnsure').live('click', function () {
+               var lid = this.name;
+               $.ajax({
+                   type: "post",
+                   url: "WebSever/Lost.asmx/Updatestate",
+                   data: JSON.stringify({lid:lid }),
+                   contentType: "application/json",
+                   success: function (data) {
+                       var datas = data.d;
+                       if (datas > 0) {
+                           location.href = 'LostEnter.htm?clid='+lid;
+                       } else {
+                           layer.msg('请先采取下补救措施！', { icon: 6, time: 2000, shade: 0.1 });
+                       }
+                   },
+                   error: function (mes) {
+
+                   }
+               })
+           })
+       })
+    
+        //查询
+       $('#btnselect').live('click', function () {
+           GetCount();
+           Page();
+           GetData(pagesize, index);
+          
+          
+       })
+    </script>
+</head>
+<body>
+    <div id="desDiv">
+        <span>客户流失管理</span>
+    </div>
+    <div id="dataDiv">
+    <table class="tableEdit" style="width:98%">
+        <tr>
+            <th>
+                客户名称：
+            </th>
+            <td>
+                <input type="text" id="txtname" />
+            </td>
+            <th>
+                流失状态：
+            </th>
+            <td>
+                <select id="selecttype">
+                    <option value="0">请选择</option>
+                    <option value="1">流失报警</option>
+                    <option value="2">暂缓流失</option>
+                    <option value="3">确认流失</option>
+                </select>
+            </td>
+            <th>
+                流失时间：
+            </th>
+            <td>
+                <input type="date" id="txtdate" />
+            </td>
+            <td>
+                <input type="button" value="查询"  id="btnselect"/>
+            </td>
+        </tr>
+    </table>
+        <br />
+        <table class="dataTable" id="dataTable">
+
+        </table>
+        
+        <center>
+            <div id="test1"></div>
+        </center>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,168 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <script src="../js/jquery-1.4.1.min.js"></script>
+	<meta charset="utf-8" />
+    <link href="../CSS/Style1.css" rel="stylesheet" type="text/css" />
+    <link href="../CSS/style2.css" rel="stylesheet" type="text/css" />
+    <script>
+        $(function () {     
+            LoadType()
+            xianshi()
+        })
+        //加载下拉框
+        function LoadType() {
+            $.ajax({
+                type: "post",
+                url: "../WebService/CRMWebService.asmx/GetAllType",
+                data: JSON.stringify(),
+                dataType: "json",
+                contentType: "application/json",
+                success: function (data) {
+        
+                    $("#Type").empty();
+                    var html = "";
+                    $("#Type").append("<option value='0'>请选择</option>");
+                    $.each(data.d, function (index, data) {
+                        html += "<option value='" + data.STID + "'>" + data.STName + "</option>";
+                    })
+                    $("#Type").append(html);
+                },
+                error: function (cms) {
+                }
+            })
+        }
+
+        $("#skip").live("click", function () {
+
+            var id = this.name;
+            window.location.href = 'ServiceEdit.html?cusid=' + id;
+
+        })
+        //显示数据类型
+        function xianshi() {
+            $.ajax({
+                type: "post",
+                url: "../WebService/CRMWebService.asmx/selectAlltype",
+                data: JSON.stringify(),
+                dataType: "json",
+                contentType: "application/json",
+                success: function (data) {
+                    var datas = data.d;
+
+                    var html = "";
+                    for (var i = 0; i < datas.length; i++) {
+                        html += "<tr><td>" + datas[i].STID + "</td><td>" + datas[i].STName + "</td><td> <img title='编辑'  src='../img/33.gif' name='" + datas[i].STID + "' id='skip' style='border: 0px' />&nbsp;&nbsp;<img title='删除' name='" + datas[i].STID + "' src='../img/11.gif' class='Del'/></td></tr>"
+                    }
+                    $("#xianshi").append(html)
+                },
+                error: function (cms) {
+                }
+            })
+
+        }
+        //删除数据类型  
+        $(".Del").live("click", function () {
+           
+            var ID = this.name;
+         
+            var Delect = { STID: ID };
+           
+            if (confirm("您确定删除吗？")) {
+                $.ajax({
+                    type: "post",
+                    url: "../WebService/TypeWebService.asmx/DeleteType",
+                    data: JSON.stringify(Delect),
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.d > 0) {
+                           alert("删除成功")
+                           window.location.reload();
+                        } else {
+                            alert("网络繁忙");
+                        }
+                    },
+                    error: function (cms) {
+                    }
+                })
+            }
+        })
+        //查询数据类型表
+        $("#select").live("click", function () {
+            var STID = $("#Type").get(0).value;
+
+            var dataid = { STID: STID,   };
+            var model = { book: dataid };
+            $.ajax({
+                type: "post",
+                url: "../WebService/TypeWebService.asmx/SelecTtype",
+                data: JSON.stringify(model),
+                dataType: "json",
+                contentType: "application/json",
+                success: function (data) {
+                    var html = "";
+                    $("#xianshi").empty();
+
+                    $.each(data.d, function (index, data) {
+                        html += "<tr>";
+                        html += "<td>" + data.STID + "</td>";
+                        html += "<td>" + data.STName + "</td>";
+                        html += "</tr>";
+                    })
+                    $("#xianshi").append(html);
+                },
+                error: function (mes) {
+                    alert(mes.ResponseText);
+                }
+
+            })
+
+        })
+
+    </script>
+</head>
+<body>
+    <div id="desDiv">
+        <span>服务管理</span>
+    </div>
+    <div id="dataDiv">
+        <div id="headDiv">
+            <img src="../images/22.gif" />&nbsp;<a href="ServiceAdd.html">新增服务</a>
+        </div>
+        <table class="tableEdit" style="width: 98%">
+            <tr>
+                <th>
+                    服务名称：
+                </th>
+                <td>
+                    <select id="Type">
+                       
+                    </select>
+                </td>
+                <td>
+                    <input type="button" value="查询" id="select"/>
+                </td>
+            </tr>
+        </table>
+        <br />
+        <table class="dataTable" id="xianshi" >
+            <tr>
+                <th>
+                    服务类型编号
+                </th>
+                <th>
+                    服务名
+                </th>
+                <th>
+                    操作
+                </th>
+            </tr>
+  
+        </table>
+    </div>
+
+</body>
+</html>

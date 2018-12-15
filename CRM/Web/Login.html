@@ -1,0 +1,218 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+	<meta charset="utf-8" />
+    <!-- CSS -->
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="assets/css/form-elements.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+  
+    <link href="js/layui/css/layui.css" rel="stylesheet" />
+    <style type="text/css">
+        .nocode {
+            display: inline-block;
+            width: 100px;
+            height: 25px;
+        }
+
+        .code {
+            display: inline-block;
+            color: #ff0000;
+            font-family: Tahoma, Geneva, sans-serif;
+            font-style: italic;
+            font-weight: bold;
+            text-align: center;
+            width: 100px;
+            height: 25px;
+            line-height: 25px;
+            cursor: pointer;
+            border: 1px solid #e2b4a2;
+            background: #e2b4a2;
+        }
+
+        .input {
+            width: 100px;
+        }
+    </style>
+ 
+ 
+  
+    <script src="js/jquery-1.4.1.min.js"></script>
+   
+    <script src="js/jquery-1.12.3.min.js"></script>
+    <script src="assets/js/jquery-1.11.1.min.js"></script>
+    <script src="js/layui/layui.js"></script>
+    <script src="assets/js/scripts.js"></script>
+
+
+
+
+    <script src="assets/js/jquery.backstretch.min.js"></script>
+    <script src="js/Jquersession.js"></script>
+   <script>
+       var code = 9999;
+
+       $(function () {
+        
+           function codes() {
+
+               var ranColor = '#' + ('00000' + (Math.random() * 0x1000000 << 0).toString(16)).slice(-6); //随机生成颜色
+               // alert(ranColor)
+               var ranColor2 = '#' + ('00000' + (Math.random() * 0x1000000 << 0).toString(16)).slice(-6);
+               var num1 = Math.floor(Math.random() * 100);
+               var num2 = Math.floor(Math.random() * 100);
+               code = num1 + num2;
+
+               $("#code").html(num1 + "+" + num2 + "=?");
+               if ($("#code").hasClass("nocode")) {
+                   $("#code").removeClass("nocode");
+                   $("#code").addClass("code");
+
+               }
+               $("#code").css('background', ranColor);
+               $("#code").css('color', ranColor2);
+
+           }
+           codes()
+
+           $("#code").on('click', codes)
+
+       });
+
+       layui.use(['form', 'layedit', 'laydate'], function () {
+           var form = layui.form
+           , layer = layui.layer
+           //$('#loginbtn').live('click', function () {
+               $('#loginbtn').click(function(){
+               var name = $.trim($('#username').val());//去空格
+               var pwd = $.trim($('#userpwd').val());
+               var pwdtest = /(.+){3,12}$/;
+               if (name=="") {
+                 
+                   layer.msg('用户名不能为空', { icon: 5, time: 1000, shade: 0.1 });
+                   $('#username').css('border-color', 'red');
+                   return;
+                 
+               }
+               if (!pwdtest.test(pwd)) {
+                  
+                   layer.msg('密码必需是6到12位', { icon: 5, time: 1000, shade: 0.1 });
+                   $('#userpwd').css('border-color', 'red');
+                   return;
+                
+               }
+               if ($("#yzm").val()== code && code != 9999) {
+                  
+               } else {
+                   layer.msg('验证码错误', { icon: 5, time: 1000, shade: 0.1 });
+                 
+                   return;
+               }
+               
+               var a = { name: name, pwd: pwd };
+               $.ajax({
+                   type: "post",
+                   url: "WebService/LoginWebServer.asmx/LoginUser",
+                   contentType: "application/json",
+                   data: JSON.stringify(a),
+                   success: function (data) {
+                       var datas = data.d;
+
+                       if (datas > 0) {
+                           $.session.set('keyname', name);
+                           $.session.set('keyuid', datas);
+                           location.href = 'HtmlPage1.html';
+                       } else {
+                        
+                           layer.msg('用户名或密码错误！', { icon: 5, time: 1000, shade: 0.1 });
+                       }
+                   },
+                   error: function (mes) {
+                       alert(mes.responseText)
+                   }
+               })
+           })
+        
+
+       });
+
+       function foucs(){
+           $(this).css('border', '3px solid #ddd');
+       }
+          
+      
+
+   </script>
+</head>
+<body>
+    <!-- Top menu -->
+  
+   
+        <!-- Top content -->
+        <div class="top-content">
+
+            <div class="inner-bg">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-8 col-sm-offset-2 text">
+                            <h1><strong>客户关系管理</strong> Login Form</h1>
+                            <div class="description">
+                                <p>
+                                    This is a free responsive registration form made with CRM.
+                                    Download it on <a href="#"><strong>AZMIND</strong></a>, customize and use it as you like!
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6 phone">
+                            <img src="assets/img/iphone.png" alt="">
+                        </div>
+                        <div class="col-sm-5 form-box">
+                            <div class="form-top">
+                                <div class="form-top-left">
+                                    <h3>Login to our App</h3>
+                                    <p>Fill in the form below to get instant access:</p>
+                                </div>
+                                <div class="form-top-right">
+                                    <i class="fa fa-pencil"></i>
+                                </div>
+                            </div>
+                            <div class="form-bottom">
+                                <form role="form" action="" method="post" class="layui-form"  >
+                                    <div class="form-group">
+                                        
+                                        <label class="sr-only" for="form-first-name">用户名:</label>
+                                        <input type="text" name="username"   lay-verify="title" placeholder="用户名..." class="form-first-name form-control" id="username" onfocus="foucs()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="sr-only" for="form-last-name">密码：</label>
+                                        <input  type="password" name="userpwd" placeholder="密 码..." class="form-last-name form-control" id="userpwd" onfocus="foucs()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="sr-only" for="form-email">验证码：</label>
+                                        <input type="text" name="form-email" placeholder="验证码..."  class="form-email form-control" id="yzm">
+                                        <span id="code" class="nocode">验证码</span> 
+                                     
+                                    </div>
+                                    
+                                    <input type="button" id="loginbtn" value="Sign in" class="btn" />
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+ 
+   
+    <!--[if lt IE 10]>
+        <script src="assets/js/placeholder.js"></script>
+    <![endif]-->
+   
+</body>
+</html>

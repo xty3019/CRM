@@ -1,0 +1,253 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+    <title></title>
+    <link href="../CSS/Style1.css" rel="stylesheet" type="text/css" />
+    <link href="../js/layui/css/layui.css" rel="stylesheet" />
+    <script src="../js/jquery-1.4.1.min.js"></script>
+    <script src="../js/layui/layui.js"></script>
+ 
+    <script src="../js/Jquersession.js"></script>
+        <script type="text/html" id="toolbarDemo">
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-sm" lay-event="getCheckData">获取选中行数据</button>
+                <button class="layui-btn layui-btn-sm" lay-event="getCheckLength">获取选中数目</button>
+                <button class="layui-btn layui-btn-sm" lay-event="isAll">验证是否全选</button>
+            </div>
+        </script>
+    <!--<script type="text/html" id="barDemo">
+        <a lay-event="edit"><i class="layui-icon layui-icon-edit" style="font-size: 24px; color: blue;"></i></a>
+        <a lay-event="del"><i class="layui-icon layui-icon-delete" style="font-size: 24px; color:red;"></i>  </a>
+       
+    </script>-->
+    
+
+    
+     <script>
+  
+             Bindata();
+      
+
+         function ConvertDate(time) {
+             // 	/转换时间格式/
+             var num = time.replace("/Date(", "").replace(")/", "");
+             var date = new Date(parseInt(num));
+             return date.getFullYear() + "年" + (date.getMonth() + 1) + "月" + date.getDate() + "日";
+         }
+
+         function Bindata() {
+             var id = $.session.get('keyuid');
+             
+             layui.use('table', function () {//1
+                 var table = layui.table;
+                 table.render({//2
+                     elem: '#demo'
+
+                     , url: '../WebService/SaleWebServer.asmx/GetAllChan' //数据接口
+                     , toolbar: '#toolbarDemo'
+                     , cols: [[ //表头
+                         {type: 'checkbox', fixed: 'left'}
+                       , { field: 'ChanName', title: '客户名称', width: 220, fixed: 'left', align: 'center' }
+                       , { field: 'ChanTitle', title: '概要', width: 230, align: 'center' }
+                       , { field: 'ChanLinkMan', title: '联系人', width: 220, align: 'center' }
+                       , { field: 'ChanLinkTel', title: '联系电话', width: 220, sort: true, align: 'center' }
+                       , {
+                           field: 'ChanCreateDate', title: '创建时间', width: 287, sort: true, align: 'center',
+                           templet: function (row) {
+                               return ConvertDate(row.ChanCreateDate);
+                           }
+                       }
+
+                      , {
+                          fixed: 'right', title: '操作',width: 288, align: 'center', templet: function (row) {
+                              var html;
+                              if (row.ChanState == 1) {
+                                  html = '<a lay-event="del"><i class="layui-icon layui-icon-delete" style="font-size: 24px; color:red;"></i>  </a><a lay-event="edit"><i class="layui-icon layui-icon-edit" style="font-size: 24px; color: blue;"></i></a>';
+
+                              } else {
+                                  html = "<a lay-event='see'><i class='layui-icon layui-icon-link' style='font-size: 24px; color:#01AAED;'></i></a>";
+                              }
+                              return html;
+                          }
+                      }
+                     ]]
+                   , id: 'testReload'
+                   , page: {
+                       theme: '#FFB800',
+                       layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip'],
+
+                   }
+                   , height: 600
+                     ,where:{
+                       id:id
+                     }
+                 });//2 end
+            
+        //头工具栏事件
+        table.on('toolbar(test)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'getCheckData':
+                    var data = checkStatus.data;
+                    layer.alert(JSON.stringify(data));
+                    break;
+                case 'getCheckLength':
+                    var data = checkStatus.data;
+                    layer.msg('选中了：' + data.length + ' 个');
+                    break;
+                case 'isAll':
+                    layer.msg(checkStatus.isAll ? '全选' : '未全选');
+                    break;
+            };
+        });//头工具栏事件end
+           
+         //监听行工具事件
+            table.on('tool(test)', function (obj) {
+                var data = obj.data;
+                var a = {id:1};
+                    //console.log(obj)
+                    if (obj.event === 'del') {
+                        layer.alert('您确定删除这条数据吗？', {
+                            skin: 'layui-layer-molv' //样式类名 自定义样式
+                            , closeBtn: 1 // 是否显示关闭按钮
+                            , anim: 1 //动画类型
+                            , btn: ['确定', '取消'] //按钮
+                            , icon: 6 // icon
+                            , yes: function () {
+                                $.ajax({
+                                          type: "post",
+                                          url: "../WebService/SaleWebServer.asmx/DeleteMsg",
+                                          data: {'id':data.ChanID},
+                                          ContentType: 'application/json',
+                                          success: function (data) { 
+                                          var datas=JSON.parse(data)
+                                          if (datas > 0) {
+                                               layer.msg('删除成功', { icon: 6, time: 2000, shade: 0.1 })
+                                               obj.del();
+                                               layer.close(index);
+                                                console.log(table);
+                                               } else {
+                                                     layer.close(index);
+                                                     layer.msg('删除失败', { icon: 2, title: '提示' });
+                                                    return;
+                                                    }
+                                             },
+                                                error: function () {
+                                                            }
+                                                  })
+                            }
+                        })
+                    }
+                    else if (obj.event === 'edit') {
+                     
+                        layer.open({
+                            type: 2,
+                            title: "修改销售机会",
+                            area: ['50%', '85%'],
+                            content: ['EditSale.htm?cid=' + data.ChanID, 'on'],
+                            shade: 0.5,
+                            resize: false,
+                            anim: 2,
+                            move: false,
+                            scrollbr: false,
+                            end: function () {
+                                location.reload();
+                            }
+                        })
+                    }
+                    else if (obj.event === 'see') {
+                        if (data.ChanState == 3) {
+                            layer.open({
+                                type: 2,
+                                title: "开发计划查看",
+                                area: ['50%', '85%'],
+                                content: ['SaleOk.htm?chanid=' + data.ChanID, 'on'],
+                                shade: 0.5,
+                                resize: false,
+                                anim: 2,
+                                move: false,
+                                scrollbr: false,
+                                end: function () {
+                                    location.reload();
+                                }
+                            })
+                        } else if (data.ChanState == 4) {
+                            layer.open({
+                                type: 2,
+                                title: "开发计划查看",
+                                area: ['50%', '85%'],
+                                content: ['SaleNo.htm?cid=' + data.ChanID, 'on'],
+                                shade: 0.5,
+                                resize: false,
+                                anim: 2,
+                                move: false,
+                                scrollbr: false,
+                                end: function () {
+                                    location.reload();
+                                }
+                            })
+                        }
+                        else if (data.ChanState == 2) {
+                            layer.open({
+                                type: 2,
+                                title: "开发计划查看",
+                                area: ['50%', '85%'],
+                                content: ['SaleOpen.htm?chanid=' + data.ChanID, 'on'],
+                                shade: 0.5,
+                                resize: false,
+                                anim: 2,
+                                move: false,
+                                scrollbr: false,
+                                end: function () {
+                                    location.reload();
+                                }
+                            })
+                        }
+                    }
+            });//监听行工具事件end
+
+          });//1 end
+
+         }
+
+         function onAddBtn() {
+             //页面层-自定义
+             
+             layer.open({
+                 type: 2,
+                 title: "添加销售机会",
+                 area: ['50%', '85%'],
+                 content: ['AddSale.htm', 'on'],
+                 shade: 0.5,
+                 resize: false,
+                 anim: 2,
+                 move: false,
+                 scrollbr: false,
+                 end: function () {
+                     location.reload();
+                 }
+            
+             });
+         }
+        
+     </script>
+</head>
+<body>
+<div id="desDiv">
+    <span>销售机会管理</span><br />
+    创建和维护销售机会
+</div>
+<div id="dataDiv">
+    <div id="headDiv">
+        <!--<a href="AddSale.htm"><span><i class="layui-icon layui-icon-add-1" style="font-size: 24px; color: blue;"></i></span></a>-->
+       
+        <img src="../images/22.gif" /><a onclick="onAddBtn()">新建</a>
+
+    </div>
+   <div>
+       <table id="demo" lay-filter="test"></table>
+   </div>
+  
+</div>
+</body>
+</html>

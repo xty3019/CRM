@@ -1,0 +1,134 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+    <title></title>
+    <link href="../CSS/style2.css" rel="stylesheet" type="text/css" />
+    <link href="../js/layui/css/layui.css" rel="stylesheet" />
+    <script src="../js/layui/layui.js"></script>
+    <script src="../js/jquery-1.4.1.min.js"></script>
+    <script type="text/javascript">
+        //function showCustomer() {
+        //    var returnValue = window.showModalDialog("../publicPage/SelectCustomer.htm?data=" + Math.random(), "参数", "dialogWidth:400px;dialogHeight:220px;help:no");
+        //}
+        $(function () {
+            Bind()
+        })
+        function GetQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return decodeURI(r[2]);
+            return null;
+        }
+        function Bind() {
+            var id = GetQueryString('uid');
+            $.ajax({
+                type: "post",
+                url: "../WebService/UsersServrice.asmx/GetUserOne",
+                data: {uid:id},
+                ContentType: 'application/json',
+                success: function (data) {
+                    var datas = (JSON.parse(data))
+                   
+                    $('#txtname').val(datas.UserLName);
+                    $('#txtpwd').val(datas.UserLPWD);
+                    $('#username').val(datas.UserName);
+                    $('#Select1').val(datas.RoleID);
+                  
+               
+                },
+                error: function (mes) {
+            
+                }
+            })
+        }
+
+        //修改
+        layui.use(['form', 'layedit'], function () {
+            var form = layui.form
+             , layer = layui.layer
+                 , layedit = layui.layedit
+            $('#btnupdate').live('click', function () {
+
+                var uid = GetQueryString('uid');
+               var name= $('#txtname').val();
+                var pwd=$('#txtpwd').val();
+               var uname= $('#username').val();
+              var rid=  $('#Select1').val();
+              if (name == "") {
+                  layer.msg('用户登录名不能为空', { icon: 5, time: 2000, shade: 0.1 });
+                    return;
+                }
+              if (pwd == "") {
+                  layer.msg('密码至少得6个字符啊', { icon: 5, time: 2000, shade: 0.1 });
+                    return;
+                }
+               
+              if (uname == "") {
+                  layer.msg('用户姓名至少得2个字符啊！', { icon: 5, time: 2000, shade: 0.1 });
+                    return;
+                }
+               
+              $.post('../WebService/UsersServrice.asmx/UpdateUser', { UserID: uid, UserLName: name, UserLPWD: pwd, UserName: uname, RoleID: rid }, function (res) {
+                    layer.msg('修改成功', { icon: 1, time: 1000, shade: 0.1 }, function (index) {
+                        close();
+                    })
+                }, 'application/json')
+            })
+        });
+
+
+
+
+        function close() {
+            var index = parent.layer.getFrameIndex(window.name);
+            parent.layer.close(index);
+        }
+    </script>
+    <style type="text/css">
+        #Select1
+        {
+            width: 181px;
+        }
+    </style>
+</head>
+<body>
+<table class="tableEdit" style="width:600px;">
+        <thead>
+            <tr>
+                <td colspan="4">编辑用户</td>
+            </tr>
+        </thead>
+        <tr>
+            <th>用户登录名：</th>
+            <td>
+                <input type="text" id="txtname" /></td>
+            <th>密码：</th>
+            <td>
+                &nbsp;<input type="text"  id="txtpwd" /></td>
+        </tr>
+        <tr>
+            <th>用户姓名：</th>
+            <td colspan="3">
+                <input type="text"  id="username"/>
+             </td>
+        </tr>
+        <tr>
+            <th>用户角色：</th>
+            <td colspan="3">
+                <select id="Select1" name="D1" >
+                    <option value="0">选择角色</option>
+                    <option value="1">销售主管</option>
+                    <option value="2">销售经理</option>
+                </select></td>
+        </tr>
+        <tfoot>
+            <tr>
+                <td colspan="4">
+                    <input type="button" value="确定"  id="btnupdate"/>&nbsp;&nbsp;
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</body>
+</html>
+

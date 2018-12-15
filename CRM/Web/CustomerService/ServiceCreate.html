@@ -1,0 +1,155 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+	<meta charset="utf-8" />
+    <link href="../CSS/style2.css" rel="stylesheet" type="text/css" />
+    <link href="../js/layui/css/layui.css" rel="stylesheet" />
+    <script src="../js/jquery-1.4.1.min.js"></script>
+    <script src="../js/layui/layui.js"></script>
+
+    <script src="../js/Jquersession.js"></script>
+    <script type="text/javascript">
+        function showCustomer() {
+            var returnValue = window.showModalDialog("../publicPage/SelectCustomer.htm?data=" + Math.random(), "参数", "dialogWidth:400px;dialogHeight:220px;help:no");
+        }
+        $(function () {
+
+            LoadType();
+        })
+
+        //加载类型下拉框
+        function LoadType() {
+            $.ajax({
+                type: "post",
+                url: "../WebService/CRMWebService.asmx/GetAllType",
+                data: JSON.stringify(),
+                dataType: "json",
+                contentType: "application/json",
+                success: function (data) {
+
+                    $("#Type").empty();
+                    var html = "";
+                    $("#Type").append("<option value='0'>请选择</option>");
+                    $.each(data.d, function (index, data) {
+                        html += "<option value='" + data.STID + "'>" + data.STName + "</option>";
+                    })
+                    $("#Type").append(html);
+                },
+                error: function (cms) {
+                }
+            })
+        }
+        
+        layui.use('layer', function () {
+            var layer = layui.layer;
+            $('#CusID').live('dblclick', function () {
+
+                layer.open({
+                    type: 2,
+                    title: "添加销售机会",
+                    area: ['40%', '40%'],
+                    content: ['../PublicPage/SelectCustomer.htm', 'on'],
+                    shade: 0.5,
+                    resize: false,
+                    anim: 2,
+                    move: false,
+                    scrollbr: false,
+                    end: function () {
+                       
+                    }
+
+                });
+            })
+        });
+        
+        //添加
+        $("#BtnAdd").live("click", function () {
+            var CusID = $("#CusID").val();
+            var CSTitle = $("#CSTitle").val();
+            var STID = $("#Type").get(0).value;
+            var CSDesc = $('#ActDesc').val();
+            var CSState = '1'
+            var CSCreateID = $.session.get('keyuid');
+            var dataid = { CusID: CusID, CSTitle: CSTitle, STID: STID,CSDesc:CSDesc, CSState: CSState, CSCreateID: CSCreateID };
+            var model = { book: dataid };
+            if (CusID == "") {
+                alert("客户编号不能为空");
+                return;
+            } else if (CSTitle == "") {
+                alert("服务概要不能为空");
+                return;
+            }
+           
+            else if (Type == 0) {
+                alert("请选择服务类型");
+                return;
+            }
+           
+            else {
+                $.ajax({
+                    type: "post",
+                    url: "../WebService/CRMWebService.asmx/AddOneBook",
+                    data: JSON.stringify(model),
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.d > 0) {
+                            alert("添加成功");
+                            location.reload();
+                           
+                        } else {
+                            alert("网络繁忙");
+                        }
+                    },
+                    error: function (cms) {
+                    }
+                })
+            }
+        })
+    </script>
+      
+</head>
+<body>
+    <table class="tableEdit" style="width:600px;">
+        <thead>
+            <tr>
+                <td colspan="4">创建服务</td>
+            </tr>
+        </thead>
+        <tr>
+            <th>客户编号：</th>
+            <td>
+                <input type="text"   id="CusID"/>
+            </td>
+            <th>服务类型：</th>
+            <td>
+                <select style="width:100px" id="Type">
+                    
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th>服务概要：</th>
+            <td colspan="3">
+                <input type="text"  id="CSTitle"  />
+            </td>
+        </tr>
+        <tr>
+            <th>详细信息：</th>
+            <td colspan="3">
+                <textarea id="ActDesc"></textarea>
+            </td>
+        </tr>
+        <tfoot>
+            <tr>
+                <td colspan="4">
+                    <input type="button" value="确定" id="BtnAdd" />&nbsp;&nbsp;
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+
+</body>
+</html>

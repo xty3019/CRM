@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+    <title></title>
+    <link href="../CSS/style3.css" rel="stylesheet" type="text/css" />
+    <link href="../js/layui/css/layui.css" rel="stylesheet" />
+    <script src="../js/jquery-1.4.1.min.js"></script>
+    <script src="../js/layui/layui.js"></script>
+    <script>
+        $(function () {
+            BindPlan();
+        })
+
+        //页面传参接收方法
+        function GetQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return decodeURI(r[2]);
+            return null;
+        }
+        //时间格式转换方法
+        function ConvertDate(time) {
+            // 	/转换时间格式/
+            var num = time.replace("/Date(", "").replace(")/", "");
+            var date = new Date(parseInt(num));
+            return date.getFullYear() + "年" + (date.getMonth() + 1) + "月" + date.getDate() + "日";
+        }
+        //显示计划信息
+        function BindPlan() {
+            var cid = GetQueryString('chanid');//接受客户编号
+            layui.use(['table', 'layer', 'element', 'jquery', 'form'], function (table, layer, element, $, form) {//1
+                var table = layui.table;
+                var layer = layui.layer;
+                table.render({//2
+                    elem: '#demo'
+                      , url: '../WebService/SaleWebServer.asmx/GetPlanByChanID' //数据接口
+                      , cols: [[ //表头
+                        {
+                            field: 'PlanDate', title: '计划时间', sort: true, width: 180, fixed: 'left', align: 'center', templet: function (row) {
+                                return ConvertDate(row.PlanDate);
+                            }
+                        }
+                      , { field: 'PlanContent', title: '计划内容', width: 180, align: 'center' }
+                      , {
+                          field: 'PlanResultDate', title: '执行时间', sort: true, width: 180, align: 'center', templet: function (row) {
+                              return ConvertDate(row.PlanResultDate);
+                          }
+                      }
+                      , { field: 'PlanResult', title: '执行结果', width: 180, align: 'center' }
+
+                      ]]
+                  , id: 'testReload'
+                  , page: {
+                      theme: '#FFB800',
+                      layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip'],
+
+                  }
+                  , height: 600
+                 , where: {
+                     ChanID: cid
+                 }
+
+                });//2 end
+            })
+        }
+    </script>
+</head>
+<body>
+    <div>
+        <table class="tableEdit">
+            <thead>
+                <tr>
+                    <td colspan="2">开发计划查看（<span style="color:Green">状态：开发成功</span>）</td>
+                </tr>
+            </thead>
+
+        </table>
+    </div>    
+
+
+        <table id="demo" lay-filter="test"></table>
+  
+ 
+</body>
+</html>

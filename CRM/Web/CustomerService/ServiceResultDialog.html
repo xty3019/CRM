@@ -1,0 +1,220 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+	<meta charset="utf-8" />
+    <link href="../CSS/style2.css" rel="stylesheet" type="text/css" />
+    <script src="../js/Toolkit.js"></script>
+    <script src="../js/jquery-1.4.1.min.js"></script>
+
+    <script src="../js/json2.js"></script>
+    <script language="javascript" type="text/javascript">
+
+        var index = -1;
+        $(function () {
+            
+            xinxin();
+            xianshi();
+            xianshi2();
+        });
+        function xinxin() {
+            //为满意度星星设置手的样式
+            $("#Myy span").css("cursor", "pointer");
+
+            //为满意度星星设置移动事件
+            $("#Myy span").mousemove(function () {
+                //改变当前星星和前面所有的
+                $(this).html("★").prevAll().html("★");
+                $(this).css("Color", "red").prevAll().css("Color", "red");
+            }).mouseout(function () {
+                $("#Myy span").html("☆").css("Color", "")  //清空星星和颜色
+
+                //只设置选中索引值的星星
+                $("#Myy span:lt(" + (index + 1) + ")").html("★").css("Color", "red");
+            });
+
+            //满意度星星的点击事件
+            $("#Myy span").click(function () {
+                //                $("#Myy span").html("☆");  //先清空
+                //                $(this).html("★");
+                //                $(this).prevAll().html("★");
+
+                //保存当前点击星星的索引值
+                index = $(this).index();
+            });
+        }
+            function xianshi() {
+                var id = GetQueryString('CSID');
+
+                $.ajax({
+                    type: "post",
+                    url: "../WebService/CRMWebService.asmx/SelectMsgByCSID",
+                    data: JSON.stringify({ cusid: id }),
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (data) {
+                        var datas = data.d;
+                        for (var i = 0; i < datas.length; i++) {
+                            $('#bianhao').text(datas[i].CusID);
+                            $('#type').text(datas[i].STName);
+                            $('#time').text(FormatJsonDate(datas[i].CSCreateDate));
+                            $('#man').text(datas[i].UserName);
+                            $('#gaiyao').text(datas[i].CSTitle);
+                            $('#xiangxi').text(datas[i].CSDesc);
+                        }
+                    },
+                    error: function (cms) {
+                    }
+                })
+            
+            }
+            //显示第二个表格数据
+            function xianshi2() {
+                var id = GetQueryString('CSID');
+                $.ajax({
+                    type: "post",
+                    url: "../WebService/CRMWebService.asmx/SelectMsgByCSID",
+                    data: JSON.stringify({ cusid: id }),
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (data) {
+                        var datas = data.d;
+                        for (var i = 0; i < datas.length; i++) {
+                            $('#datetime').text(FormatJsonDate(datas[i].CSDealDate));
+                            $('#dataman').text(datas[i].UserName);
+                            $('#dateset').text(datas[i].CSDeal);
+
+                        }
+                    },
+                    error: function (cms) {
+                    }
+                })
+            }
+            function GetQueryString(name) {
+                var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null) return decodeURI(r[2]);
+                return null;
+            }
+
+            $('#btnadd').live('click', function () {
+                var CSID = GetQueryString('CSID');
+                var result = $('#resulttxt').val();
+                if (result == "") {
+                    alert('处理结果不能为空')
+                    return;
+                }
+                var CSSatisfy = index;
+                var dataid = { CSID: CSID, CSResult: result, CSSatisfy: CSSatisfy };
+                var model = { book: dataid };
+                $.ajax({
+                    type: "post",
+                    contentType: "application/json",
+                    url: "../WebService/CRMWebService.asmx/UPdateStateFoure",
+                    data:JSON.stringify(model),
+                    async: false,
+                    success: function (data) {
+                        var sum = data.d;
+                        if (sum > 0) {
+                            alert('处理成功');
+                            close();
+                        } else {
+                            alert('处理失败');
+                        }
+
+                    }
+                });
+            })
+            function close() {
+                var index = parent.layer.getFrameIndex(window.name);
+                parent.layer.close(index);
+            }
+    </script>
+
+</head>
+<body>
+    <table class="tableEdit" style="width:500px;">
+        <thead>
+            <tr>
+                <td colspan="4">服务信息</td>
+            </tr>
+        </thead>
+        <tr>
+            <th>客户编号：</th>
+            <td id="bianhao"></td>
+            <th>服务类型：</th>
+            <td id="type"></td>
+        </tr>
+        <tr>
+            <th>创建时候：</th>
+            <td id="time"></td>
+            <th>创建人：</th>
+            <td id="man"></td>
+        </tr>
+        <tr>
+            <th>服务概要：</th>
+            <td colspan="3" id="gaiyao"></td>
+        </tr>
+        <tr>
+            <th>详细信息：</th>
+            <td colspan="3" id="xiangxi"></td>
+        </tr>
+    </table>
+    <table class="tableEdit" style="width:500px;">
+        <thead>
+            <tr>
+                <td colspan="4">服务处理</td>
+            </tr>
+        </thead>
+        <tr>
+            <th>处理时间：</th>
+            <td id="datetime"></td>
+            <th>处理人：</th>
+            <td id="dataman"></td>
+        </tr>
+        <tr>
+            <th>服务处理：</th>
+            <td colspan="3" id="dateset"></td>
+        </tr>
+    </table>
+    <table class="tableEdit" style="width: 500px;">
+        <thead>
+            <tr>
+                <td colspan="4">
+                    服务反馈
+                </td>
+            </tr>
+        </thead>
+        <tr>
+            <th>
+                处理结果：
+            </th>
+            <td>
+                <input type="text" id="resulttxt" />
+            </td>
+            <th>
+                满意度：
+            </th>
+            <td>
+                <div id="Myy">
+                    <span title="很不满意">☆</span>
+                    <span title="不满意">☆</span>
+                    <span title="一般">☆</span>
+                    <span title="满意">☆</span>
+                    <span title="非常满意">☆</span>
+                </div>
+            </td>
+        </tr>
+        <tfoot>
+            <tr>
+                <td colspan="4">
+                    <input type="button" value="确定"  id="btnadd"/>&nbsp;&nbsp;
+                    <input type="button" value="关闭" onclick="window.close()" />
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+
+</body>
+</html>

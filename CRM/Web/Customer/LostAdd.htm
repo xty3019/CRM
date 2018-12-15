@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link href="../CSS/style2.css" rel="stylesheet" type="text/css" />
+    <script src="../JS/jquery-1.4.1.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+
+
+
+        })
+        function GetQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return decodeURI(r[2]);
+            return null;
+        }
+          //添加功能
+        $("#AddBtn").live("click", function () {
+            var lid=GetQueryString('lid')
+            var MeDesc = $("#MeDescText").val();
+            var mode = {CLID:lid, MeDesc: MeDesc, };
+            var jsonModel = { lost: mode };
+            if (MeDesc == "") {
+                    alert("措施细节不能为空");
+                }
+                else {
+                    $.ajax({
+                        type: "post",
+                        url: "WebSever/Lost.asmx/LostAdd",
+                        data: JSON.stringify(jsonModel),
+                        contentType: "application/json",
+                        success: function (data) {
+                            if (data.d > 0) {
+                                alert("添加成功");
+                                window.location.href = 'LostsPage.htm';
+                            } else {
+                                alert("添加失败");
+                            }
+                        },
+                        error: function (mes) {
+                            alert(mes.responseText);
+                        }
+                    })
+                }
+
+
+
+            })
+    </script>
+</head>
+<body>
+    <table class="tableEdit">
+        <thead>
+            <tr>
+                <td colspan="2">
+                    添加客户暂缓流失措施
+                </td>
+            </tr>
+        </thead>
+        <tr>
+            <th>
+                流失措施细节：
+            </th>
+            <td>
+                <textarea style="width: 90%" id="MeDescText"></textarea>
+            </td>
+        </tr>
+        <tfoot>
+            <tr>
+                <td colspan="4">
+                    <input type="button" value="确定" id="AddBtn" />&nbsp;&nbsp;
+                    <input type="button" value="取消" />
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</body>
+</html>

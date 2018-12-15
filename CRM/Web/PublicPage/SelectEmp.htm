@@ -1,0 +1,88 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link href="../CSS/style2.css" rel="stylesheet" type="text/css" />
+    <link href="../js/layui/css/layui.css" rel="stylesheet" />
+    <link href="../js/layui/css/layui.css" rel="stylesheet" />
+    <script src="../js/layui/layui.js"></script>
+    <script src="../js/jquery-1.4.1.min.js"></script>
+    <script>
+        $(function () {
+            BIndType();
+        })
+        function BIndType() {
+            $.ajax({
+                type: "post",
+                url: "../WebService/SaleWebServer.asmx/SelectAllUser",
+                data:null,
+                ContentType: 'application/json',
+                success: function (data) {
+                    var datas = JSON.parse(data)
+                    var html;
+                    for (var i = 0; i < datas.length; i++) {
+                        html += "<option value='" + datas[i].UserID + "'>" + datas[i].UserName + "</option>";
+                    }
+                    $('#selecttype').append(html);
+                },
+                error: function () {
+
+                }
+            })
+        }
+        //接收页面传的参数
+        function GetQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return decodeURI(r[2]);
+            return null;
+        }
+
+        $('#selecttype').live('dblclick', function () {
+            var id = $('#selecttype').get(0).value;
+            var csid = GetQueryString('cusid')
+          
+          
+            $.ajax({
+                type: "post",
+                url: "../WebService/CRMWebService.asmx/UpdateCuMan",
+                data: JSON.stringify({ CSID: csid, CSDueID: id}),
+
+                contentType: "application/json",
+                success: function (data) {
+                    var datas = data.d;
+                    if (datas > 0) {
+                        alert('分配成功');
+                        close();
+                    }
+                  
+                },
+                error: function (cms) {
+                }
+            })
+        })
+        function close() {
+            var index = parent.layer.getFrameIndex(window.name);
+            parent.layer.close(index);
+        }
+    </script>
+</head>
+<body>
+    <table class="tableEdit">
+        <thead>
+            <tr>
+                <td>
+                    员工选择<span style="color:Red;font-weight:normal">(选择双击确定)</span>
+                </td>
+            </tr>
+        </thead>
+        <tr>
+            <td>
+                <select size="10" id="selecttype" style="width: 100px;">
+                  
+                </select>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

@@ -1,0 +1,147 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+	<meta charset="utf-8" />
+   
+    <link href="js/layui/css/layui.css" rel="stylesheet" />
+    <script src="js/jquery-1.4.1.min.js"></script>
+    <script src="js/Jquersession.js"></script>
+    <script>
+    
+        $(function () {
+            var id = $('#2').attr('id');
+            
+            GetRoleID()
+         
+       
+            var html = " <img src='http://t.cn/RCzsdCq' class='layui-nav-img'>" + $.session.get('keyname');
+            $('#yeye').append(html)
+        })
+        function GetRoleID() {
+            var uid = $.session.get("keyuid");
+            $.ajax({
+                type: "post",
+                url: "WebService/SaleWebServer.asmx/GetRoleID",
+                data: { uid: uid },
+                ContentType: 'application/json',
+                success: function (data) {
+                    var datas = JSON.parse(data)
+                   
+                    $('.layui-nav-item[id=' + datas + ']').attr("style", "display:none");
+                    $('a[id=' + datas + ']').attr("style", "display:none");
+                  
+                    if(datas == 4){
+                       
+                        $('#1,#aa,#tt').attr("style", "display:none")
+                        $('#guangli').attr("style", "display:block")
+                      }
+                },
+                error: function () {
+
+                }
+            })
+        }
+    </script>
+</head>
+<body class="layui-layout-body">
+    <div class="layui-layout layui-layout-admin">
+        <div class="layui-header">
+            <div class="layui-logo">CMS 客户管理系统</div>
+            <!-- 头部区域（可配合layui已有的水平导航） -->
+            <ul class="layui-nav layui-layout-left">
+                <!--<li class="layui-nav-item"><a href="">控制台</a></li>
+                <li class="layui-nav-item"><a href="">商品管理</a></li>
+                <li class="layui-nav-item"><a href="Login.html">用户</a></li>
+                <li class="layui-nav-item">
+                    <a href="javascript:;">其它系统</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="">邮件管理</a></dd>
+                        <dd><a href="">消息管理</a></dd>
+                        <dd><a href="">授权管理</a></dd>
+                    </dl>
+                </li>-->
+            </ul>
+            <ul class="layui-nav layui-layout-right">
+                <li class="layui-nav-item">
+                    <a href="javascript:;" id="yeye">
+                        <!--<img src="http://t.cn/RCzsdCq" class="layui-nav-img">
+                       
+                        贤心-->
+                    </a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="">基本资料</a></dd>
+                        <dd><a href="">安全设置</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item"><a href="Login.html">退了</a></li>
+            </ul>
+        </div>
+
+        <div class="layui-side layui-bg-black">
+            <div class="layui-side-scroll">
+                <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+                <ul class="layui-nav layui-nav-tree" lay-filter="test">
+                    <li class="layui-nav-item layui-nav-itemed" id="tt">
+                        <a class="" href="javascript:;" id="one">营销管理</a>
+                        <dl class="layui-nav-child">
+                            <dd><a  href="Sale/salechance.htm" target="sysMain">销售机会管理</a></dd>
+                            <dd><a href="Sale/SaleAllot.htm" target="sysMain">销售机会分配</a></dd>
+                            <dd><a href="Sale/saleManager.htm" target="sysMain">客户开发计划</a></dd>
+                           
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item" id="1">
+                        <a href="javascript:;" id="two">客户管理</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="Customer/CustomerPage.htm" target="sysMain">客户信息管理</a></dd>
+                            <dd><a href="Customer/LostsPage.htm" target="sysMain">客户流失管理</a></dd>
+                        
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item" id="aa">
+                        <a href="javascript:;" id="three">服务管理</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="CustomerService/ServiceCreate.html" target="sysMain" id="1">服务创建</a></dd>
+                            <dd><a href="CustomerService/ServiceAllot.html" target="sysMain" id="2">服务分配</a></dd>
+                            <dd><a href="CustomerService/ServiceDispose.html" target="sysMain" id="1">服务处理</a></dd>
+                            <dd><a href="CustomerService/ServiceResult.html" target="sysMain" id="1">服务反馈</a></dd>
+                            <dd><a href="CustomerService/serviceDetail.html" target="sysMain">服务归档</a></dd>
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item" id="guangli" style="display:none">
+                        <a href="javascript:;">系统管理</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="SystemManager/UserList.htm" target="sysMain">用户管理</a></dd>
+                            <dd><a href="SystemManager/serviceList.html" target="sysMain">服务管理</a></dd>
+                          
+                        </dl>
+                    </li>
+                    <!--<li class="layui-nav-item"><a href="" target="sysMain">云市场</a></li>
+                    <li class="layui-nav-item"><a href="" target="sysMain">发布商品</a></li>-->
+                </ul>
+            </div>
+        </div>
+
+        <!--右边显示-->
+        <div class="layui-body" style="top:60px;bottom:44px;position:absolute;left:200px;right:0;bottom:0;z-index:998;width:auto;overflow:hidden;box-sizing:border-box">
+            
+           
+            <!-- 内容主体区域 -->
+            <iframe frameborder="0" name="sysMain" id="sysMain" src="default.htm" style=" width:100%; height:100%;"></iframe> 
+        </div>
+
+     
+    </div>
+  
+    <script src="js/layui/layui.js"></script>
+    <script>
+//JavaScript代码区域
+layui.use('element', function(){
+  var element = layui.element;
+
+});
+    </script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link href="../CSS/style2.css" rel="stylesheet" type="text/css" />
+
+    <link href="../js/layui/css/layui.css" rel="stylesheet" />
+    <script src="../js/layui/layui.js"></script>
+    <script src="../js/jquery-1.4.1.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+
+
+
+        })
+        function GetQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return decodeURI(r[2]);
+            return null;
+        }
+        layui.use(['form', 'layedit'], function () {
+            var form = layui.form
+             , layer = layui.layer
+                 , layedit = layui.layedit
+          //添加功能
+            $("#AddBtn").live("click", function () {
+                var CLID = GetQueryString('clid');
+                var CLReason = $("#CLReasonText").val();
+                var mode = { CLID: CLID, CLReason: CLReason, };
+                var jsonModel = { Clost: mode };
+                if (CLReason == "") {
+                    layer.msg('流失原因不能为空', { icon: 5, time: 2000, shade: 0.1 });
+                    return;
+                }
+                else {
+                    $.ajax({
+                        type: "post",
+                        url: "WebSever/Lost.asmx/ClostAdd",
+                        data: JSON.stringify(jsonModel),
+                        contentType: "application/json",
+                        success: function (data) {
+                            if (data.d > 0) {
+                                alert("添加成功");
+
+                            } else {
+                                alert("添加失败");
+                            }
+                        },
+                        error: function (mes) {
+                            alert(mes.responseText);
+                        }
+                    })
+                }
+            });
+
+
+            })
+   </script>
+</head>
+<body>
+    <table class="tableEdit">
+        <thead>
+            <tr>
+                <td colspan="2">
+                    客户流失确认
+                </td>
+            </tr>
+        </thead>
+        <tr>
+            <th>
+                流失原因：
+            </th>
+            <td>
+                <textarea style="width: 90%" id="CLReasonText"></textarea>
+            </td>
+        </tr>
+
+        <tfoot>
+            <tr>
+                <td colspan="4">
+                    <input type="button" value="确定" id="AddBtn" />&nbsp;&nbsp;
+                    <input type="button" value="取消" />
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</body>
+</html>

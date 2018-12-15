@@ -1,0 +1,228 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+	<meta charset="utf-8" />
+    <link href="../CSS/Style1.css" rel="stylesheet" type="text/css" />
+    <link href="../CSS/Style2.css" rel="stylesheet" type="text/css" />
+
+    <link href="../js/layui/css/layui.css" rel="stylesheet" />
+    <script src="../js/layui/layui.js"></script>
+    <script src="../js/jquery-1.4.1.min.js"></script>
+
+    <script type="text/javascript">
+        var sum;//定义一个变量接受总数
+        var index;//定义一个分页索引(页码)
+        var pagesize;//定义一个 每页显示多少条
+        function Time(stime) {
+            var start = eval('new ' + stime.substr(1, stime.length - 2));
+            var start_time = [start.getFullYear() + '年' + (start.getMonth() + 1) + '月' + start.getDate()];
+            return start_time;
+        }
+        $(function () {
+            LoadType();
+            Page();
+            GetCount();
+          
+           
+           
+        })
+       
+        //显示所有数据
+        function xianshi(pagesize, index) {
+            var CusName = $("#CusName").val();
+            var STID = $("#Type").get(0).value;
+        
+           // var dataid = { CusName: 13, STID: STID, size: pagesize, pageindex: index };
+           
+         
+
+            $.ajax({
+                type: "post",
+                url: "../WebService/CRMWebService.asmx/SlectAllMsg",
+                data: JSON.stringify({ CusName: CusName, STID: STID, size: pagesize, pageindex: index }),
+
+                contentType: "application/json",
+                success: function (data) {
+                    var datas = data.d;
+                    var html = "";
+                    for (var i = 0; i < datas.length; i++) {
+                        html += "<tr><td>" + datas[i].CusName + "</td><td>" + datas[i].CSTitle + "</td><td>" + datas[i].STName + "</td><td>" + datas[i].UserName + "</td><td>" + Time(datas[i].CSCreateDate) + "</td><td><input type='text' value='' readonly='readonly' id='txtn' name='"+datas[i].CSID+"' /></td></tr>"
+                    }
+                    $("#xianshi").append(html)
+                },
+                error: function (cms) {
+                }
+            })
+         
+      
+        }
+        //加载类型下拉框
+        function LoadType() {
+            $.ajax({
+                type: "post",
+                url: "../WebService/CRMWebService.asmx/GetAllType",
+                data: JSON.stringify(),
+                dataType: "json",
+                contentType: "application/json",
+                success: function (data) {
+        
+                    $("#Type").empty();
+                    var html = "";
+                    $("#Type").append("<option value='0'>请选择</option>");
+                    $.each(data.d, function (index, data) {
+                        html += "<option value='" + data.STID + "'>" + data.STName + "</option>";
+                    })
+                    $("#Type").append(html);
+                },
+                error: function (cms) {
+                }
+            })
+        }
+
+        function GetCount() {
+            var CusName = $("#CusName").val();
+            var STID = $("#Type").get(0).value;
+        
+            var jsonModel = { CusName: CusName, STID: STID};
+
+            $.ajax({
+                type: "post",
+                contentType: "application/json",
+                url: "../WebService/CRMWebService.asmx/GetCount",
+                data: JSON.stringify(jsonModel),
+                async: false,
+                success: function (data) {
+                    sum = data.d;
+
+                }
+            });
+        }
+        function Page() {
+            layui.use('laypage', function () {
+                var laypage = layui.laypage;
+                laypage.render({
+                    elem: 'test1' //注意，这里的 test1 是 ID，不用加 # 号
+                  , count: sum //数据总数，从服务端得到
+                  , limit: 2//每页的条数
+                  , limits: [10, 20, 30]//可选择每页数目
+                  , layout: ['count', 'prev', 'page', 'next', 'limit', 'skip']
+                    , jump: function (obj, first) {
+                        //obj包含了当前分页的所有参数，比如：
+                        //console.log(obj.curr); //得到当前页，以便向服务端请求对应页的数据。
+                        //console.log(obj.limit); //得到每页显示的条数
+                        index = obj.curr;
+                        pagesize = obj.limit;
+                        xianshi(pagesize, index);
+                        //首次不执行
+                        if (!first) {
+                            //do something
+                        }
+                    }
+                })
+
+            })
+        }
+        //查询功能
+        $("#select").live("click", function () {   
+        
+
+            GetCount();
+            Page();
+            xianshi(pagesize, index)
+           
+        })
+
+        //弹窗
+        layui.use('layer', function () {
+            var layer = layui.layer;
+            $('#txtn').live('dblclick', function () {
+              
+                layer.open({
+                    type: 2,
+                    title: "添加指派人",
+                    area: ['50%', '85%'],
+                    content: ['../PublicPage/SelectEmp.htm?cusid='+this.name, 'on'],
+                    shade: 0.5,
+                    resize: false,
+                    anim: 2,
+                    move: false,
+                    scrollbr: false,
+                    end: function () {
+                        location.reload();
+                    }
+
+                });
+
+
+            })
+
+
+        });
+    </script>
+
+</head>
+<body>
+    <div id="desDiv">
+        <span>服务分配</span><br />
+        对于客户提出的咨询、建议、投诉等服务分配专人进行处理
+    </div>
+    <div id="dataDiv">
+        <div id="headDiv">
+        </div>
+        <table class="tableEdit" style="width: 98%" >
+            <tr>
+                <th>
+                    客户名称：
+                </th>
+                <td>
+                    <input type="text" id="CusName"/>
+                </td>
+                <th>
+                    服务类型：
+                </th>
+                <td>
+                    <select id="Type">
+                        
+                    </select>
+                </td>
+                
+                <td>
+                    <input type="button" value="查询" id="select" />
+                </td>
+            </tr>
+        </table>
+     
+        <br />
+        <table class="dataTable" id="xianshi">
+            <tr>
+                <th>
+                    客户名称
+                </th>
+                <th>
+                    概要
+                </th>
+                <th>
+                    服务类型
+                </th>
+                <th>
+                    创建人
+                </th>
+                <th>
+                    创建时间
+                </th>
+                <th>
+                    指派人
+                </th>
+            </tr>
+           
+        </table>
+    
+        <center>
+            <div id="test1"></div>
+        </center>
+    </div>
+
+</body>
+</html>
